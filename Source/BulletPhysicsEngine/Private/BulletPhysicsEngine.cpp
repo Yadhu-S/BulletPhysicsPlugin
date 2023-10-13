@@ -45,8 +45,8 @@ void FBulletPhysicsEngineModule::ShutdownModule()
 	// we call this function before unloading the module.
 
 	// Free the dll handle
-	FPlatformProcess::FreeDllHandle(ExampleLibraryHandle);
-	ExampleLibraryHandle = nullptr;
+	//	FPlatformProcess::FreeDllHandle(ExampleLibraryHandle);
+	//	ExampleLibraryHandle = nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE

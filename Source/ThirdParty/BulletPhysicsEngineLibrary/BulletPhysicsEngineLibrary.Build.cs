@@ -12,9 +12,6 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 		bool bDebug = Target.Configuration == UnrealTargetConfiguration.Debug || Target.Configuration == UnrealTargetConfiguration.DebugGame;
 		bool bDevelopment = Target.Configuration == UnrealTargetConfiguration.Development;
 
-		bDebug=false;
-		bDevelopment = false;
-
 		string BuildFolder;
 		string BuildSuffix;
 
