@@ -21,7 +21,7 @@ void FBulletPhysicsEngineModule::StartupModule()
 #if PLATFORM_WINDOWS
 	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/BulletPhysicsEngineLibrary/Win64/ExampleLibrary.dll"));
 #elif PLATFORM_MAC
-    LibraryPath = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/BulletPhysicsEngineLibrary/Mac/Release/libExampleLibrary.dylib"));
+	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/BulletPhysicsEngineLibrary/Mac/Release/libExampleLibrary.dylib"));
 #elif PLATFORM_LINUX
 	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/BulletPhysicsEngineLibrary/Linux/x86_64-unknown-linux-gnu/libExampleLibrary.so"));
 #endif // PLATFORM_WINDOWS
@@ -50,5 +50,5 @@ void FBulletPhysicsEngineModule::ShutdownModule()
 }
 
 #undef LOCTEXT_NAMESPACE
-	
+
 IMPLEMENT_MODULE(FBulletPhysicsEngineModule, BulletPhysicsEngine)

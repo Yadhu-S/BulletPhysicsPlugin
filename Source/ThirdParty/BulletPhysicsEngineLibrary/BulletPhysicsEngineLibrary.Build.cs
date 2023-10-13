@@ -9,28 +9,55 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 	{
 		Type = ModuleType.External;
 
+		bool bDebug = Target.Configuration == UnrealTargetConfiguration.Debug || Target.Configuration == UnrealTargetConfiguration.DebugGame;
+		bool bDevelopment = Target.Configuration == UnrealTargetConfiguration.Development;
 
-		   bool bDebug = Target.Configuration == UnrealTargetConfiguration.Debug || Target.Configuration == UnrealTargetConfiguration.DebugGame;
-        bool bDevelopment = Target.Configuration == UnrealTargetConfiguration.Development;
+		bDebug=false;
+		bDevelopment = false;
 
-        string BuildFolder = bDebug ? "Debug":
-            bDevelopment ? "RelWithDebInfo" : "Release";
-        string BuildSuffix = bDebug ? "_Debug":
-            bDevelopment ? "_RelWithDebugInfo" : "";
+		string BuildFolder;
+		string BuildSuffix;
 
-        // Library path
-        string LibrariesPath = Path.Combine(ModuleDirectory, "lib", BuildFolder);
-        PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "BulletCollision" + BuildSuffix + ".lib")); 
-        PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "BulletDynamics" + BuildSuffix + ".lib")); 
-        PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "LinearMath" + BuildSuffix + ".lib")); 
+		if (bDebug)
+		{
+			BuildFolder = "Debug";
+			BuildSuffix = "_Debug";
+		}
+		else if (bDevelopment)
+		{
+			BuildFolder = "RelWithDebInfo";
+			BuildSuffix = "_RelWithDebugInfo";
+		}
+		else
+		{
+			BuildFolder = "Release";
+			BuildSuffix = "";
+		}
 
-        // Include path (I'm just using the source here since Bullet has mixed src & headers)
-       PublicIncludePaths.Add( Path.Combine( ModuleDirectory, "src" ) );
-       PublicDefinitions.Add("WITH_BULLET_BINDING=1");
-			
-			
-			
-        
-      
+		string BuildPlatForm = "win64";
+		string LibExtension = ".lib";
+		string BuildPrefix = "lib";
+
+		if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+			BuildPlatForm = "linux";
+			LibExtension = ".so";
+			BuildSuffix = "";
+		}
+
+		// Library path
+		string LibrariesPath = Path.Combine( ModuleDirectory, "lib", BuildPlatForm, BuildFolder);
+
+		string[] libraryNames = { "BulletCollision", "BulletDynamics", "LinearMath" };
+
+		foreach (string libraryName in libraryNames)
+		{
+			PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, BuildPrefix + libraryName + BuildSuffix + LibExtension));
+		}
+
+		// Include path (I'm just using the source here since Bullet has mixed src & headers)
+		PublicIncludePaths.Add( Path.Combine( ModuleDirectory, "src" ) );
+		PublicDefinitions.Add("WITH_BULLET_BINDING=1");
+
 	}
 }
