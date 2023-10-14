@@ -33,13 +33,14 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 
 		string BuildPlatForm = "win64";
 		string LibExtension = ".lib";
-		string BuildPrefix = "lib";
+		string BuildPrefix="";
 
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			BuildPlatForm = "linux";
 			LibExtension = ".so";
 			BuildSuffix = "";
+			BuildPrefix = "lib";
 		}
 
 		// Library path
