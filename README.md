@@ -1,6 +1,9 @@
 # BulletPhysicsPlugin
 Bullet Physics SDK for Unreal Engine 4.26+
 
+## Status
+This is a work in progress (very WIP) :), use the originally forked repo mentioned below if you want something usable.
+
 ### Windows
 Clone this repo into your `Engine/Plugin` directory, recompile.
 
@@ -11,7 +14,7 @@ Clone this repo into your `Engine/Plugin` directory, recompile.
 4. `sudo make install`
 5. Link the libs from `/usr/lib` to the `ThirdParty` folder
 
-### Source
+### Credits
 Read this [blog](https://www.stevestreeting.com/2020/07/26/using-bullet-for-physics-in-ue4/). The code in this plugin
 is from there.
 
