@@ -239,6 +239,40 @@ btCollisionShape* UBulletSkeletalMeshComponent::GetConvexHullCollisionShape(UBod
 	return C;
 }
 
+void UBulletSkeletalMeshComponent::AddRigidBody(AActor* Body, float Friction, float Restitution, int& ID,float mass)
+{
+	AddRigidBody(Body, GetCachedDynamicShapeData(Body, mass), Friction, Restitution);
+	ID = BtRigidBodies.Num() - 1;
+}
+
+btRigidBody* UBulletSkeletalMeshComponent::AddRigidBody(AActor* Actor, const UBulletSkeletalMeshComponent::CachedDynamicShapeData& ShapeData, float Friction, float Restitution)
+{
+	return AddRigidBody(Actor, ShapeData.Shape, ShapeData.Inertia, ShapeData.Mass, Friction, Restitution);
+}
+
+btRigidBody* UBulletSkeletalMeshComponent::AddRigidBody(AActor* Actor, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution)
+{
+
+	AActor* OwningActor = GetOwner();
+	if (OwningActor==nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::AddRigidBody: Owning actor is empty"));
+		return nullptr;
+	}
+	auto Origin = OwningActor->GetActorLocation();
+	auto MotionState = new BulletCustomMotionState(Actor, Origin);
+	const btRigidBody::btRigidBodyConstructionInfo rbInfo(Mass*10, MotionState, CollisionShape, Inertia*10);
+	btRigidBody* Body = new btRigidBody(rbInfo);
+	Body->setUserPointer(Actor);
+	Body->setActivationState(ACTIVE_TAG);
+	Body->setDeactivationTime(0);
+
+	BtWorld->addRigidBody(Body);
+	BtRigidBodies.Add(Body);
+
+	return Body;
+
+}
+
 btCollisionObject* UBulletSkeletalMeshComponent::AddStaticCollision(btCollisionShape* Shape, const FTransform& Transform, float Friction,
 		float Restitution, AActor* Actor)
 {
@@ -264,4 +298,60 @@ btCollisionObject* UBulletSkeletalMeshComponent::AddStaticCollision(btCollisionS
 	BtStaticObjects.Add(Obj);
 
 	return Obj;
+}
+
+const UBulletSkeletalMeshComponent::CachedDynamicShapeData& UBulletSkeletalMeshComponent::GetCachedDynamicShapeData(AActor* Actor, float Mass)
+{
+	// We re-use compound shapes based on (leaf) BP class
+	const FName ClassName = Actor->GetClass()->GetFName();
+
+
+
+	// Because we want to support compound colliders, we need to extract all colliders first before
+	// constructing the final body.
+	TArray<btCollisionShape*, TInlineAllocator<20>> Shapes;
+	TArray<FTransform, TInlineAllocator<20>> ShapeRelXforms;
+	ExtractPhysicsGeometry(Actor,
+			[&Shapes, &ShapeRelXforms](btCollisionShape* Shape, const FTransform& RelTransform)
+			{
+			Shapes.Add(Shape);
+			ShapeRelXforms.Add(RelTransform);
+			});
+
+
+	CachedDynamicShapeData ShapeData;
+	ShapeData.ClassName = ClassName;
+
+	// Single shape with no transform is simplest
+	if (ShapeRelXforms.Num() == 1 &&
+			ShapeRelXforms[0].EqualsNoScale(FTransform::Identity))
+	{
+		ShapeData.Shape = Shapes[0];
+		// just to make sure we don't think we have to clean it up; simple shapes are already stored
+		ShapeData.bIsCompound = false;
+	}
+	else
+	{
+		// Compound or offset single shape; we will cache these by blueprint type
+		btCompoundShape* CS = new btCompoundShape();
+		for (int i = 0; i < Shapes.Num(); ++i)
+		{
+			// We don't use the actor origin when converting transform in this case since object space
+			// Note that btCompoundShape doesn't free child shapes, which is fine since they're tracked separately
+			CS->addChildShape(BulletHelpers::ToBt(ShapeRelXforms[i], FVector::ZeroVector), Shapes[i]);
+		}
+
+		ShapeData.Shape = CS;
+		ShapeData.bIsCompound = true;
+	}
+
+	// Calculate Inertia
+	ShapeData.Mass = Mass;
+	ShapeData.Shape->calculateLocalInertia(Mass, ShapeData.Inertia);
+
+	// Cache for future use
+	CachedDynamicShapes.Add(ShapeData);
+
+	return CachedDynamicShapes.Last();
+
 }
