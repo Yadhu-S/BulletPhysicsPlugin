@@ -31,6 +31,7 @@ class btCompoundShape;
 class btSphereShape;
 class btRigidBody;
 class btCollisionObject;
+class btIDebugDraw;
 
 PRAGMA_POP_PLATFORM_DEFAULT_PACKING
 THIRD_PARTY_INCLUDES_END

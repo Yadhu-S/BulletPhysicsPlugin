@@ -23,8 +23,51 @@ UCLASS()
 	public:	
 		// Sets default values for this actor's properties
 		ABulletActor();
+
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void AddStaticBody(AActor* player, float Friction, float Restitution,int &ID);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void AddProcBody(AActor* Body,  float Friction, TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d, float Restitution, int& ID);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void UpdateProcBody(AActor* Body, float Friction, TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d, float Restitution, int& ID, int PrevID);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void AddRigidBody(AActor* Body, float Friction, float Restitution, int& ID,float mass);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void UpdatePlayertransform(AActor* player, int ID);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void AddImpulse(int ID, FVector Impulse, FVector Location);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void AddForce(int ID, FVector Impulse, FVector Location);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void StepPhysics(float DeltaSeconds, int substeps);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void SetPhysicsState(int ID, FTransform transforms, FVector Velocity, FVector AngularVelocity,FVector& Force);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void GetPhysicsState(int ID, FTransform& transforms, FVector& Velocity, FVector& AngularVelocity, FVector& Force);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void ResetSim();
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+			int SubSteps=2;
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+			float RandVar;
+
+	private:
 		// Bullet section
 		// Global objects
+
 		btCollisionConfiguration* BtCollisionConfig;
 		btCollisionDispatcher* BtCollisionDispatcher;
 		btBroadphaseInterface* BtBroadphase;
@@ -67,41 +110,10 @@ UCLASS()
 
 		TArray<CachedDynamicShapeData> CachedDynamicShapes;
 
-
-		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bullet Physics|Objects")
-			float randvar;
-		// I chose not to use spinning / rolling friction in the end since it had issues!
-
-	protected:
-		// Called when the game starts or when spawned
-		virtual void BeginPlay() override;
-
-	public:	
-		// Called every frame
-		virtual void Tick(float DeltaTime) override;
-
+	private:
 		void SetupStaticGeometryPhysics(TArray<AActor*> Actors, float Friction, float Restitution);
-		
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void AddStaticBody(AActor* player, float Friction, float Restitution,int &ID);
-		
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void AddProcBody(AActor* Body,  float Friction, TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d, float Restitution, int& ID);
-		
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void UpdateProcBody(AActor* Body, float Friction, TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d, float Restitution, int& ID, int PrevID);
-		
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void AddRigidBody(AActor* Body, float Friction, float Restitution, int& ID,float mass);
 
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void UpdatePlayertransform(AActor* player, int ID);
-
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void AddImpulse(int ID, FVector Impulse, FVector Location);
-
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void AddForce(int ID, FVector Impulse, FVector Location);
+		btDiscreteDynamicsWorld* GetBulletWorld(){return BtWorld;};
 
 		typedef const std::function<void(btCollisionShape* /*SingleShape*/, const FTransform& /*RelativeXform*/)>& PhysicsGeometryCallback;
 
@@ -115,6 +127,9 @@ UCLASS()
 
 		void ExtractPhysicsGeometry(const FTransform& XformSoFar, UBodySetup* BodySetup, PhysicsGeometryCallback CB);
 
+		const ABulletActor::CachedDynamicShapeData& GetCachedDynamicShapeData(AActor* Actor, float Mass);
+
+	public:
 		btCollisionShape* GetBoxCollisionShape(const FVector& Dimensions);
 
 		btCollisionShape* GetSphereCollisionShape(float Radius);
@@ -125,22 +140,14 @@ UCLASS()
 
 		btCollisionShape* GetConvexHullCollisionShape(UBodySetup* BodySetup, int ConvexIndex, const FVector& Scale);
 
-		const ABulletActor::CachedDynamicShapeData& GetCachedDynamicShapeData(AActor* Actor, float Mass);
 
 		btRigidBody* AddRigidBody(AActor* Actor, const ABulletActor::CachedDynamicShapeData& ShapeData, float Friction, float Restitution);
 
 		btRigidBody* AddRigidBody(AActor* Actor, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution);
 
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void StepPhysics(float DeltaSeconds, int substeps);
+	protected:
+		// Called when the game starts or when spawned
+		virtual void BeginPlay() override;
 
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void SetPhysicsState(int ID, FTransform transforms, FVector Velocity, FVector AngularVelocity,FVector& Force);
-
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void GetPhysicsState(int ID, FTransform& transforms, FVector& Velocity, FVector& AngularVelocity, FVector& Force);
-
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void ResetSim();
-
+		virtual void Tick(float DeltaTime) override;
 };

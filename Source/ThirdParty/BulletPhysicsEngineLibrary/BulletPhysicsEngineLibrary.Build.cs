@@ -23,7 +23,7 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 		else if (bDevelopment)
 		{
 			BuildFolder = "RelWithDebugInfo";
-			BuildSuffix = "_RelWithDebugInfo";
+			BuildSuffix = "";
 		}
 		else
 		{

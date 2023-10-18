@@ -9,7 +9,7 @@ ABulletActor::ABulletActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	//BtDebugDraw = new BulletDebugDraw(GetWorld(), GetActorLocation());
+//	BtDebugDraw = new BulletDebugDraw(GetWorld(), GetActorLocation());
 
 }
 
@@ -29,8 +29,10 @@ void ABulletActor::BeginPlay()
 	BtWorld = new btDiscreteDynamicsWorld(BtCollisionDispatcher, BtBroadphase, BtConstraintSolver, BtCollisionConfig);
 	BtWorld->setGravity(btVector3(0, 0, -9.8));
 
-	//BtWorld->setDebugDrawer(BtDebugDraw);
-	//BtWorld->debugDrawWorld();
+	UE_LOG(LogTemp, Warning, TEXT("ABulletActor::BeginPlay"));
+	BulletDebugDraw debugdrawer(GetWorld(), GetActorLocation());
+//	BtWorld->setDebugDrawer(BtDebugDraw);
+//	BtWorld->debugDrawWorld();
 	// I mess with a few settings on BtWorld->getSolverInfo() but they're specific to my needs	
 
 	// Gravity vector in our units (1=1cm)
@@ -39,7 +41,7 @@ void ABulletActor::BeginPlay()
 
 
 	/*
-	   plane = new btStaticPlaneShape(btVector3(0, 0, 1), 0);
+	   plane = new btStaticPlaneShape(btVector5(0, 0, 1), 0);
 	   btTransform t;
 	   t.setIdentity();
 	   t.setOrigin(btVector3(0, 0, 0));
@@ -54,7 +56,8 @@ void ABulletActor::BeginPlay()
 void ABulletActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	randvar = mt->getRandSeed();
+	RandVar = mt->getRandSeed();
+	StepPhysics(0.008f,SubSteps);
 }
 
 void ABulletActor::SetupStaticGeometryPhysics(TArray<AActor*> Actors, float Friction, float Restitution)
@@ -85,8 +88,6 @@ void ABulletActor::AddStaticBody(AActor* Body, float Friction, float Restitution
 			const FTransform FinalXform = RelTransform * Body->GetActorTransform();
 			AddStaticCollision(Shape, FinalXform, Friction, Restitution, Body);
 			});
-
-
 	ID = BtWorld->getNumCollisionObjects() - 1;
 }
 
@@ -181,7 +182,6 @@ btCollisionObject* ABulletActor::AddStaticCollision(btCollisionShape* Shape, con
 	BtWorld->addCollisionObject(Obj);
 	UE_LOG(LogTemp, Warning, TEXT("Static geom added"));
 	BtStaticObjects.Add(Obj);
-
 	return Obj;
 }
 

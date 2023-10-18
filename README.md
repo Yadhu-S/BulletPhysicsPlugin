@@ -9,7 +9,14 @@ Clone this repo into your `Engine/Plugin` directory, recompile.
 
 ### Linux
 1. Clone [bullet](https://github.com/bulletphysics/bullet3)
-2. Compile, `cmake -DBUILD_SHARED_LIBS=1 -DINSTALL_LIBS=1 \ -DINSTALL_EXTRA_LIBS=1 \ -DCMAKE_BUILD_TYPE=Release .`
+2. Compile, `cmake \
+    -DLIBRARY_OUTPUT_PATH=<PATH TO THIS REPO>/BulletPhysicsPlugin/Source/ThirdParty/BulletPhysicsEngineLibrary/lib/linux/Debug\
+    -DBUILD_SHARED_LIBS=1 \
+    -DINSTALL_LIBS=0 \
+    -DINSTALL_EXTRA_LIBS=0 \
+    -DCMAKE_BUILD_TYPE=Debug \
+    .`
+	Replace build type as required.
 3. `make` , had to use `make -j20` because, compile was not using all cores for some reason.
 4. `sudo make install`
 5. Link the libs from `/usr/lib` to the `ThirdParty` folder
