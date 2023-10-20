@@ -3,17 +3,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "PhysicsEngine/BodySetup.h"
-#include "BulletPhysicsEngineLibrary/BulletMinimal.h"
-#include "BulletPhysicsEngineLibrary/src/bthelper.h"
-#include "BulletPhysicsEngineLibrary/src/motionstate.h"
-#include "BulletPhysicsEngineLibrary/src/BulletMain.h"
-#include "BulletPhysicsEngineLibrary/debug/btdebug.h"
-#include "Components/ShapeComponent.h"
-#include <functional>
 #include "BulletActor.h"
-#include "GameFramework/Actor.h"
 #include "BulletSkeletalMeshComponent.generated.h"
 
 

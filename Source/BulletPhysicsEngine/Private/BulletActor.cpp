@@ -9,7 +9,6 @@ ABulletActor::ABulletActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-//	BtDebugDraw = new BulletDebugDraw(GetWorld(), GetActorLocation());
 
 }
 
@@ -30,9 +29,11 @@ void ABulletActor::BeginPlay()
 	BtWorld->setGravity(btVector3(0, 0, -9.8));
 
 	UE_LOG(LogTemp, Warning, TEXT("ABulletActor::BeginPlay"));
-	BulletDebugDraw debugdrawer(GetWorld(), GetActorLocation());
-//	BtWorld->setDebugDrawer(BtDebugDraw);
-//	BtWorld->debugDrawWorld();
+	if (GetWorld() == nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("ABulletActor::Got empty bullet world"));
+	}
+	BtDebugDraw = new BulletDebugDraw(GetWorld(), GetActorLocation());
+	BtWorld->setDebugDrawer(BtDebugDraw);
 	// I mess with a few settings on BtWorld->getSolverInfo() but they're specific to my needs	
 
 	// Gravity vector in our units (1=1cm)
@@ -55,8 +56,14 @@ void ABulletActor::BeginPlay()
 // Called every frame
 void ABulletActor::Tick(float DeltaTime)
 {
+
 	Super::Tick(DeltaTime);
 	RandVar = mt->getRandSeed();
+#if WITH_EDITORONLY_DATA
+	if (DebugEnabled) {
+		BtWorld->debugDrawWorld();
+	}
+#endif
 	StepPhysics(0.008f,SubSteps);
 }
 
@@ -167,6 +174,10 @@ void ABulletActor::ExtractPhysicsGeometry(AActor* Actor, PhysicsGeometryCallback
 btCollisionObject* ABulletActor::AddStaticCollision(btCollisionShape* Shape, const FTransform& Transform, float Friction,
 		float Restitution, AActor* Actor)
 {
+	if (!BtWorld){
+		UE_LOG(LogTemp, Warning, TEXT("BtWorld is empty"));
+		return nullptr;
+	}
 	btTransform Xform = BulletHelpers::ToBt(Transform, GetActorLocation());
 	btCollisionObject* Obj = new btCollisionObject();
 	Obj->setCollisionShape(Shape);
@@ -175,12 +186,7 @@ btCollisionObject* ABulletActor::AddStaticCollision(btCollisionShape* Shape, con
 	Obj->setRestitution(Restitution);
 	Obj->setUserPointer(Actor);
 	Obj->setActivationState(DISABLE_DEACTIVATION);
-	if (!BtWorld){
-		UE_LOG(LogTemp, Warning, TEXT("Got empty BT-World"));
-		return nullptr;
-	}
 	BtWorld->addCollisionObject(Obj);
-	UE_LOG(LogTemp, Warning, TEXT("Static geom added"));
 	BtStaticObjects.Add(Obj);
 	return Obj;
 }

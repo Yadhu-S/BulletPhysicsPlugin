@@ -7,6 +7,7 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 {
 	public BulletPhysicsEngineLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
+
 		Type = ModuleType.External;
 
 		bool bDebug = Target.Configuration == UnrealTargetConfiguration.Debug || Target.Configuration == UnrealTargetConfiguration.DebugGame;

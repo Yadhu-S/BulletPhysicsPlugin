@@ -19,7 +19,7 @@ void UBulletSkeletalMeshComponent::BeginPlay()
 void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 {
 	if (!BulletActor) {
-		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: Loaded wihout a bulletActor. Physics won't work."));
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: loaded wihout a global bulletActor, physics won't work"));
 		return;
 	}
 	// Get the physics asset associated with the skeletal mesh
@@ -42,10 +42,9 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 			FKBoxElem Box = BodySetup->AggGeom.BoxElems[0];;
 			FVector Dimensions = FVector(Box.X, Box.Y, Box.Z) * LocalComponentTransform.GetScale3D();
 			btCollisionShape* Shape = BulletActor -> GetBoxCollisionShape(Dimensions);
-			BulletActor->AddRigidBody(GetOwner(),Shape,btVector3(),10,10,10);
-			UE_LOG(LogTemp, Warning, TEXT("GOT"));
+			BulletActor->AddRigidBody(GetOwner(),Shape,btVector3(),GetMass(),10,10);
 		}
 		return;
 	}
-	UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset:: Got empty physics asset"));
+	UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset:: got empty physics asset"));
 }

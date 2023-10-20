@@ -64,6 +64,9 @@ UCLASS()
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
 			float RandVar;
 
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+			bool DebugEnabled=true;
+
 	private:
 		// Bullet section
 		// Global objects
