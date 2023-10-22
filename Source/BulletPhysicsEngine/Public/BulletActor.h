@@ -59,13 +59,24 @@ UCLASS()
 			void ResetSim();
 
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+			bool DebugEnabled=true;
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+			FVector Gravity=FVector(0, 0, -9.8);
+
+		// Input the fixed frame rate to calculate physics
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+			float PhysicsRefreshRate =120.0f;
+
+		// This is independent of the frame rate in UE
+		UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Bullet Physics|Objects")
+			float PhysicsDeltaTime;
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
 			int SubSteps=2;
 
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
 			float RandVar;
-
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
-			bool DebugEnabled=true;
 
 	private:
 		// Bullet section
@@ -99,7 +110,6 @@ UCLASS()
 			FVector Scale;
 			btConvexHullShape* Shape;
 		};
-
 		TArray<ConvexHullShapeHolder> BtConvexHullCollisionShapes;
 		// These shapes are for *potentially* compound rigid body shapes
 		struct CachedDynamicShapeData
@@ -110,15 +120,35 @@ UCLASS()
 			btScalar Mass;
 			btVector3 Inertia; // because we like to precalc this
 		};
-
 		TArray<CachedDynamicShapeData> CachedDynamicShapes;
 
+	public:
+		btCollisionShape* GetBoxCollisionShape(const FVector& Dimensions);
+
+		btCollisionShape* GetSphereCollisionShape(float Radius);
+
+		btCollisionShape* GetCapsuleCollisionShape(float Radius, float Height);
+
+		btCollisionShape* GetTriangleMeshShape(TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d);
+
+		btCollisionShape* GetConvexHullCollisionShape(UBodySetup* BodySetup, int ConvexIndex, const FVector& Scale);
+
+		btRigidBody* AddRigidBody(AActor* Actor, const ABulletActor::CachedDynamicShapeData& ShapeData, float Friction, float Restitution);
+
+		btRigidBody* AddRigidBody(AActor* Actor, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution);
+
+	protected:
+		// Called when the game starts or when spawned
+		virtual void BeginPlay() override;
+
+		virtual void Tick(float DeltaTime) override;
+
 	private:
+		typedef const std::function<void(btCollisionShape* /*SingleShape*/, const FTransform& /*RelativeXform*/)>& PhysicsGeometryCallback;
+
 		void SetupStaticGeometryPhysics(TArray<AActor*> Actors, float Friction, float Restitution);
 
 		btDiscreteDynamicsWorld* GetBulletWorld(){return BtWorld;};
-
-		typedef const std::function<void(btCollisionShape* /*SingleShape*/, const FTransform& /*RelativeXform*/)>& PhysicsGeometryCallback;
 
 		void ExtractPhysicsGeometry(AActor* Actor, PhysicsGeometryCallback CB);
 
@@ -132,25 +162,4 @@ UCLASS()
 
 		const ABulletActor::CachedDynamicShapeData& GetCachedDynamicShapeData(AActor* Actor, float Mass);
 
-	public:
-		btCollisionShape* GetBoxCollisionShape(const FVector& Dimensions);
-
-		btCollisionShape* GetSphereCollisionShape(float Radius);
-
-		btCollisionShape* GetCapsuleCollisionShape(float Radius, float Height);
-
-		btCollisionShape* GetTriangleMeshShape(TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d);
-
-		btCollisionShape* GetConvexHullCollisionShape(UBodySetup* BodySetup, int ConvexIndex, const FVector& Scale);
-
-
-		btRigidBody* AddRigidBody(AActor* Actor, const ABulletActor::CachedDynamicShapeData& ShapeData, float Friction, float Restitution);
-
-		btRigidBody* AddRigidBody(AActor* Actor, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution);
-
-	protected:
-		// Called when the game starts or when spawned
-		virtual void BeginPlay() override;
-
-		virtual void Tick(float DeltaTime) override;
 };

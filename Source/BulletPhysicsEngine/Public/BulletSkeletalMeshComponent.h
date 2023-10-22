@@ -17,15 +17,13 @@ UCLASS()
 		UBulletSkeletalMeshComponent();
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void SetBulletActor(ABulletActor* bulletActor){BulletActor = bulletActor;};
-
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void AddOwnPhysicsAsset();
+			void LoadBulletActor(ABulletActor* bulletActor){BulletActor = bulletActor; AddOwnPhysicsAsset();};
 
 	private:
 		UPROPERTY()
 			ABulletActor* BulletActor;
 
+			void AddOwnPhysicsAsset();
 	protected:
 
 		virtual void BeginPlay() override;

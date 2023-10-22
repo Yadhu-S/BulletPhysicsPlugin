@@ -9,6 +9,7 @@ ABulletActor::ABulletActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	PhysicsDeltaTime = 1/PhysicsRefreshRate;
 
 }
 
@@ -16,41 +17,27 @@ ABulletActor::ABulletActor()
 void ABulletActor::BeginPlay()
 {
 	Super::BeginPlay();
-	BtCollisionConfig = new btDefaultCollisionConfiguration();
 
+	BtCollisionConfig = new btDefaultCollisionConfiguration();
 	BtCollisionDispatcher = new btCollisionDispatcher(BtCollisionConfig);
 	BtBroadphase = new btDbvtBroadphase();
 	mt = new btSequentialImpulseConstraintSolver;
 	mt->setRandSeed(1234);
 	BtConstraintSolver = mt;
-
-
 	BtWorld = new btDiscreteDynamicsWorld(BtCollisionDispatcher, BtBroadphase, BtConstraintSolver, BtCollisionConfig);
-	BtWorld->setGravity(btVector3(0, 0, -9.8));
-
+	BtWorld->setGravity(btVector3(Gravity.X,Gravity.Y, Gravity.Z));
 	UE_LOG(LogTemp, Warning, TEXT("ABulletActor::BeginPlay"));
+
 	if (GetWorld() == nullptr) {
 		UE_LOG(LogTemp, Warning, TEXT("ABulletActor::Got empty bullet world"));
 	}
-	BtDebugDraw = new BulletDebugDraw(GetWorld(), GetActorLocation());
-	BtWorld->setDebugDrawer(BtDebugDraw);
-	// I mess with a few settings on BtWorld->getSolverInfo() but they're specific to my needs	
 
-	// Gravity vector in our units (1=1cm)
-
-	//getSimulationIslandManager()->setSplitIslands(false);
-
-
-	/*
-	   plane = new btStaticPlaneShape(btVector5(0, 0, 1), 0);
-	   btTransform t;
-	   t.setIdentity();
-	   t.setOrigin(btVector3(0, 0, 0));
-	   auto MotionState = new btDefaultMotionState(t);
-	   btRigidBody::btRigidBodyConstructionInfo info(0.0, MotionState, plane);
-	   btRigidBody* body = new btRigidBody(info);
-	   BtWorld->addRigidBody(body);*/
-
+#if WITH_EDITORONLY_DATA
+	if (DebugEnabled) {
+		BtDebugDraw = new BulletDebugDraw(GetWorld(), GetActorLocation());
+		BtWorld->setDebugDrawer(BtDebugDraw);
+	}
+#endif
 }
 
 // Called every frame
@@ -59,12 +46,14 @@ void ABulletActor::Tick(float DeltaTime)
 
 	Super::Tick(DeltaTime);
 	RandVar = mt->getRandSeed();
+	StepPhysics(PhysicsDeltaTime,SubSteps);
+
 #if WITH_EDITORONLY_DATA
 	if (DebugEnabled) {
 		BtWorld->debugDrawWorld();
 	}
 #endif
-	StepPhysics(0.008f,SubSteps);
+
 }
 
 void ABulletActor::SetupStaticGeometryPhysics(TArray<AActor*> Actors, float Friction, float Restitution)
@@ -148,29 +137,6 @@ void ABulletActor::AddForce( int ID, FVector Impulse, FVector Location)
 }
 
 
-void ABulletActor::ExtractPhysicsGeometry(AActor* Actor, PhysicsGeometryCallback CB)
-{
-	TInlineComponentArray<UActorComponent*, 20> Components;
-	// Used to easily get a component's transform relative to actor, not parent component
-	const FTransform InvActorTransform = Actor->GetActorTransform().Inverse();
-
-	// Collisions from meshes
-
-	Actor->GetComponents(UStaticMeshComponent::StaticClass(), Components);
-	for (auto&& Comp : Components)
-	{
-		ExtractPhysicsGeometry(Cast<UStaticMeshComponent>(Comp), InvActorTransform, CB);
-	}
-
-	// Collisions from separate collision components
-	Actor->GetComponents(UShapeComponent::StaticClass(), Components);
-	for (auto&& Comp : Components)
-	{
-		ExtractPhysicsGeometry(Cast<UShapeComponent>(Comp), InvActorTransform, CB);
-	}
-}
-
-
 btCollisionObject* ABulletActor::AddStaticCollision(btCollisionShape* Shape, const FTransform& Transform, float Friction,
 		float Restitution, AActor* Actor)
 {
@@ -192,6 +158,27 @@ btCollisionObject* ABulletActor::AddStaticCollision(btCollisionShape* Shape, con
 }
 
 
+void ABulletActor::ExtractPhysicsGeometry(AActor* Actor, PhysicsGeometryCallback CB)
+{
+	TInlineComponentArray<UActorComponent*, 20> Components;
+	// Used to easily get a component's transform relative to actor, not parent component
+	const FTransform InvActorTransform = Actor->GetActorTransform().Inverse();
+
+	// Collisions from meshes
+
+	Actor->GetComponents(UStaticMeshComponent::StaticClass(), Components);
+	for (auto&& Comp : Components)
+	{
+		ExtractPhysicsGeometry(Cast<UStaticMeshComponent>(Comp), InvActorTransform, CB);
+	}
+
+	// Collisions from separate collision components
+	Actor->GetComponents(UShapeComponent::StaticClass(), Components);
+	for (auto&& Comp : Components)
+	{
+		ExtractPhysicsGeometry(Cast<UShapeComponent>(Comp), InvActorTransform, CB);
+	}
+}
 
 
 
