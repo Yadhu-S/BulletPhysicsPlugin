@@ -2,6 +2,7 @@
 
 
 #include "BulletActor.h"
+#include "motionstate.h"
 
 
 // Sets default values
@@ -444,15 +445,35 @@ btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, btCollisionShape* Collisi
 	auto Origin = GetActorLocation();
 	auto MotionState = new BulletCustomMotionState(Actor, Origin);
 	const btRigidBody::btRigidBodyConstructionInfo rbInfo(Mass*10, MotionState, CollisionShape, Inertia*10);
-	btRigidBody* Body = new btRigidBody(rbInfo);
-	Body->setUserPointer(Actor);
-	Body->setActivationState(ACTIVE_TAG);
-	Body->setDeactivationTime(0);
+	btRigidBody* body = new btRigidBody(rbInfo);
+	body->setUserPointer(Actor);
+	body->setActivationState(ACTIVE_TAG);
+	body->setDeactivationTime(0);
+	//body->setWorldTransform(BulletHelpers::ToBt(GetTransform(), Origin)); 
+	BtWorld->addRigidBody(body);
+	BtRigidBodies.Add(body);
 
-	BtWorld->addRigidBody(Body);
-	BtRigidBodies.Add(Body);
+	return body;
 
-	return Body;
+}
+
+btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel, FTransform Transform,FTransform LocalTransform, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution)
+{
+
+
+	Transform.SetLocation(Transform.GetLocation() - LocalTransform.GetLocation());
+	FVector Origin = GetActorLocation();
+	BulletUEMotionState* MotionState = new BulletUEMotionState(skel, Origin, Transform, LocalTransform);
+	const btRigidBody::btRigidBodyConstructionInfo rbInfo(Mass, MotionState, CollisionShape, Inertia);
+	btRigidBody* body = new btRigidBody(rbInfo);
+	body->setWorldTransform(BulletHelpers::ToBt(Transform, Origin));
+	body->setUserPointer(GetOwner());
+	body->setActivationState(ACTIVE_TAG);
+	body->setDeactivationTime(0);
+	BtWorld->addRigidBody(body);
+	BtRigidBodies.Add(body);
+
+	return body;
 
 }
 

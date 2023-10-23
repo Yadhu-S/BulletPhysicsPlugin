@@ -137,6 +137,8 @@ UCLASS()
 
 		btRigidBody* AddRigidBody(AActor* Actor, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution);
 
+		btRigidBody* AddRigidBody(USkeletalMeshComponent* skel, FTransform Transform,FTransform LocalTransform, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution);
+
 	protected:
 		// Called when the game starts or when spawned
 		virtual void BeginPlay() override;

@@ -29,7 +29,7 @@ class BulletDebugDraw : public btIDebugDraw
 				int lifeTime, const btVector3& color) override
 		{
 			drawLine(PointOnB, PointOnB + normalOnB * distance, color);
-			btVector3 ncolor(1, 0, 0);
+			btVector3 ncolor(3, 0, 0);
 			drawLine(PointOnB, PointOnB + normalOnB * 0.01, ncolor);
 		}
 
