@@ -85,6 +85,7 @@ void ABulletActor::AddStaticBody(AActor* Body, float Friction, float Restitution
 			// Every sub-collider in the actor is passed to this callback function
 			// We're baking this in world space, so apply actor transform to relative
 			const FTransform FinalXform = RelTransform * Body->GetActorTransform();
+			UE_LOG(LogTemp, Warning, TEXT("Scale %s"),*FinalXform.GetScale3D().ToString());
 			AddStaticCollision(Shape, FinalXform, Friction, Restitution, Body);
 			});
 	ID = BtWorld->getNumCollisionObjects() - 1;
@@ -217,6 +218,7 @@ void ABulletActor::ExtractPhysicsGeometry(UShapeComponent* Sc, const FTransform&
 void ABulletActor::ExtractPhysicsGeometry(const FTransform& XformSoFar, UBodySetup* BodySetup, PhysicsGeometryCallback CB)
 {
 	FVector Scale = XformSoFar.GetScale3D();
+	UE_LOG(LogTemp, Warning, TEXT("Scale extract %s"),*Scale.ToString());
 	btCollisionShape* Shape = nullptr;
 
 	// Iterate over the simple collision shapes

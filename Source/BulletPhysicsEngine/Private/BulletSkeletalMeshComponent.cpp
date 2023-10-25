@@ -27,9 +27,9 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 	if (PhysicsAsset)
 	{
 		// Iterate over the bodies in the physics asset
-		for (const USkeletalBodySetup* BodySetup : PhysicsAsset->SkeletalBodySetups)
+		for (const USkeletalBodySetup* bodySetup : PhysicsAsset->SkeletalBodySetups)
 		{
-			for (FKBoxElem box : BodySetup->AggGeom.BoxElems){
+			for (FKBoxElem box : bodySetup->AggGeom.BoxElems){
 				FVector Dimensions = FVector(box.X, box.Y, box.Z) * box.GetTransform().GetScale3D();
 				btCollisionShape* Shape = BulletActor -> GetBoxCollisionShape(Dimensions);
 				btVector3 inertia;
