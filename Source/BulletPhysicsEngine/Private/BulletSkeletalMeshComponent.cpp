@@ -29,28 +29,25 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 		// Iterate over the bodies in the physics asset
 		for (const USkeletalBodySetup* BodySetup : PhysicsAsset->SkeletalBodySetups)
 		{
-			// Check if there are no skeletal body setups
-			if (BodySetup->AggGeom.BoxElems.Num() == 0)
-			{
-				continue;
-			}
-			FKBoxElem Box = BodySetup->AggGeom.BoxElems[0];;
-			FVector Dimensions = FVector(Box.X, Box.Y, Box.Z) * Box.GetTransform().GetScale3D();
-			btCollisionShape* Shape = BulletActor -> GetBoxCollisionShape(Dimensions);
-			btVector3 inertia;
-			Shape->calculateLocalInertia(2000, inertia);
-			BulletActor->AddRigidBody(
-					this,
-					Box.GetTransform() * GetComponentTransform(),
-					Box.GetTransform(),
-					Shape,
-					inertia,
-					2000,
-					2,
-					0);
+			for (FKBoxElem box : BodySetup->AggGeom.BoxElems){
+				FVector Dimensions = FVector(box.X, box.Y, box.Z) * box.GetTransform().GetScale3D();
+				btCollisionShape* Shape = BulletActor -> GetBoxCollisionShape(Dimensions);
+				btVector3 inertia;
+				Shape->calculateLocalInertia(2000, inertia);
+				BulletActor->AddRigidBody(
+						this,
+						box.GetTransform() * GetComponentTransform(),
+						box.GetTransform(),
+						Shape,
+						inertia,
+						2000,
+						2,
+						0);
 
-			UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: done setting up own rigid body"));
-			break;
+				// For now, I need only 1 box. TODO: Make this general purpose
+				break;
+			}
+			UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: done setting up own rigid body"));
 		}
 		return;
 	}

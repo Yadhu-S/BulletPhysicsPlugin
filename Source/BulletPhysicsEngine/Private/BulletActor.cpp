@@ -10,7 +10,20 @@ ABulletActor::ABulletActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
 	PhysicsDeltaTime = 1/PhysicsRefreshRate;
+
+	BtCollisionConfig = new btDefaultCollisionConfiguration();
+	BtCollisionDispatcher = new btCollisionDispatcher(BtCollisionConfig);
+
+	BtBroadphase = new btDbvtBroadphase();
+
+	mt = new btSequentialImpulseConstraintSolver;
+	mt->setRandSeed(1234);
+
+	BtConstraintSolver = mt;
+	BtWorld = new btDiscreteDynamicsWorld(BtCollisionDispatcher, BtBroadphase, BtConstraintSolver, BtCollisionConfig);
+	BtWorld->setGravity(btVector3(Gravity.X,Gravity.Y, Gravity.Z));
 
 }
 
@@ -19,18 +32,9 @@ void ABulletActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BtCollisionConfig = new btDefaultCollisionConfiguration();
-	BtCollisionDispatcher = new btCollisionDispatcher(BtCollisionConfig);
-	BtBroadphase = new btDbvtBroadphase();
-	mt = new btSequentialImpulseConstraintSolver;
-	mt->setRandSeed(1234);
-	BtConstraintSolver = mt;
-	BtWorld = new btDiscreteDynamicsWorld(BtCollisionDispatcher, BtBroadphase, BtConstraintSolver, BtCollisionConfig);
-	BtWorld->setGravity(btVector3(Gravity.X,Gravity.Y, Gravity.Z));
-	UE_LOG(LogTemp, Warning, TEXT("ABulletActor::BeginPlay"));
-
 	if (GetWorld() == nullptr) {
-		UE_LOG(LogTemp, Warning, TEXT("ABulletActor::Got empty bullet world"));
+		UE_LOG(LogTemp, Warning, TEXT("ABulletActor::GetWorld() returned null"));
+		return;
 	}
 
 #if WITH_EDITORONLY_DATA
@@ -61,8 +65,6 @@ void ABulletActor::SetupStaticGeometryPhysics(TArray<AActor*> Actors, float Fric
 {
 	for (AActor* Actor : Actors)
 	{
-
-
 		ExtractPhysicsGeometry(Actor,
 				[Actor, this, Friction, Restitution](btCollisionShape* Shape, const FTransform& RelTransform)
 				{
@@ -141,6 +143,7 @@ void ABulletActor::AddForce( int ID, FVector Impulse, FVector Location)
 btCollisionObject* ABulletActor::AddStaticCollision(btCollisionShape* Shape, const FTransform& Transform, float Friction,
 		float Restitution, AActor* Actor)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Adding object wth transform %s"), *Transform.ToString());
 	if (!BtWorld){
 		UE_LOG(LogTemp, Warning, TEXT("BtWorld is empty"));
 		return nullptr;

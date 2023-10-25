@@ -98,5 +98,3 @@ Export/**
 !.gitignore
 
 #shared objects
-# Compile and instal the libs as needed
-Source/ThirdParty/BulletPhysicsEngineLibrary/lib/*

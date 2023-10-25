@@ -10,7 +10,7 @@ class BulletDebugDraw : public btIDebugDraw
 	protected:
 		UWorld* World;
 		FVector WorldOrigin;
-		int DebugMode=btIDebugDraw::DBG_MAX_DEBUG_DRAW_MODE;
+		int DebugMode;
 
 	public:
 		BulletDebugDraw(UWorld* world, const FVector& worldOrigin)

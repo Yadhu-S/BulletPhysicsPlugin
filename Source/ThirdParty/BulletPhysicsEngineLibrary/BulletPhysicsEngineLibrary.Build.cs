@@ -24,7 +24,7 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 		else if (bDevelopment)
 		{
 			BuildFolder = "RelWithDebugInfo";
-			BuildSuffix = "";
+			BuildSuffix = "_RelWithDebugInfo";
 		}
 		else
 		{
@@ -41,6 +41,7 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 			BuildPlatForm = "linux";
 			LibExtension = ".so";
 			BuildPrefix = "lib";
+			BuildSuffix = "";
 		}
 
 		// Library path
