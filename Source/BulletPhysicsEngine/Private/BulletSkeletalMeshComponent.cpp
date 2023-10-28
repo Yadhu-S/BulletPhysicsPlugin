@@ -61,12 +61,12 @@ void UBulletSkeletalMeshComponent::BulletAddForce(FVector Force, FVector Locatio
 	}
 }
 
-float UBulletSkeletalMeshComponent::BulletGetHorizontalVelocity()
+void UBulletSkeletalMeshComponent::GetPhysicsState(FTransform& Transform, FVector& Velocity, FVector& AngularVelocity,FVector& Force)
 {
-	if (BulletOwnerRigidBody){
-		FVector linearVelocity = BulletHelpers::ToUEDir(BulletOwnerRigidBody->getLinearVelocity(),true);
-		linearVelocity.Z=0.0f;
-		return linearVelocity.Size();
+	if (BulletOwnerRigidBody) {
+		Transform= BulletHelpers::ToUE( BulletOwnerRigidBody->getWorldTransform(),GetComponentLocation()) ;
+		Velocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getLinearVelocity(), GetComponentLocation());
+		AngularVelocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getAngularVelocity(), FVector(0));
+		Force = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getTotalForce(), GetComponentLocation());
 	}
-	return 0.0f;
 }

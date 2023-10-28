@@ -24,8 +24,7 @@ UCLASS()
 			void BulletAddForce(FVector Force, FVector Location);
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			float BulletGetHorizontalVelocity();
-
+			void GetPhysicsState(FTransform& Transform, FVector& Velocity, FVector& AngularVelocity,FVector& Force);
 	private:
 		btRigidBody* BulletOwnerRigidBody;
 
