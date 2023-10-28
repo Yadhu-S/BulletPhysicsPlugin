@@ -4,6 +4,7 @@
 #pragma once
 
 #include "BulletActor.h"
+#include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "BulletSkeletalMeshComponent.generated.h"
 
 
@@ -19,11 +20,19 @@ UCLASS()
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
 			void LoadBulletActor(ABulletActor* bulletActor){BulletActor = bulletActor; AddOwnPhysicsAsset();};
 
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void BulletAddForce(FVector Force, FVector Location);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			float BulletGetHorizontalVelocity();
+
 	private:
+		btRigidBody* BulletOwnerRigidBody;
+
 		UPROPERTY()
 			ABulletActor* BulletActor;
 
-			void AddOwnPhysicsAsset();
+		void AddOwnPhysicsAsset();
 	protected:
 
 		virtual void BeginPlay() override;

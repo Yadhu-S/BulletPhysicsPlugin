@@ -34,7 +34,7 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 				btCollisionShape* Shape = BulletActor -> GetBoxCollisionShape(Dimensions);
 				btVector3 inertia;
 				Shape->calculateLocalInertia(2000, inertia);
-				BulletActor->AddRigidBody(
+				BulletOwnerRigidBody = BulletActor->AddRigidBody(
 						this,
 						box.GetTransform() * GetComponentTransform(),
 						box.GetTransform(),
@@ -52,4 +52,21 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 		return;
 	}
 	UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset:: got empty physics asset"));
+}
+
+void UBulletSkeletalMeshComponent::BulletAddForce(FVector Force, FVector Location)
+{
+	if (BulletOwnerRigidBody){
+		BulletOwnerRigidBody->applyForce(BulletHelpers::ToBtDir(Force, true), BulletHelpers::ToBtPos(Location, GetComponentLocation()));
+	}
+}
+
+float UBulletSkeletalMeshComponent::BulletGetHorizontalVelocity()
+{
+	if (BulletOwnerRigidBody){
+		FVector linearVelocity = BulletHelpers::ToUEDir(BulletOwnerRigidBody->getLinearVelocity(),true);
+		linearVelocity.Z=0.0f;
+		return linearVelocity.Size();
+	}
+	return 0.0f;
 }

@@ -473,7 +473,7 @@ btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel, FTransform
 	btRigidBody* body = new btRigidBody(rbInfo);
 	body->setWorldTransform(BulletHelpers::ToBt(Transform, Origin));
 	body->setUserPointer(GetOwner());
-	body->setActivationState(ACTIVE_TAG);
+	body->setActivationState(DISABLE_DEACTIVATION);
 	body->setDeactivationTime(0);
 	BtWorld->addRigidBody(body);
 	BtRigidBodies.Add(body);
