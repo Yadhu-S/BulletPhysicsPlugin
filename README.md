@@ -2,8 +2,10 @@
 Bullet Physics SDK for Unreal Engine 4.26+
 
 ## Screenshots
-![alt text](https://github.com/Yadhu-S/BulletPhysicsPlugin/blob/dev/screenshots/UE_physics_view.png?raw=true)
-![alt text](https://github.com/Yadhu-S/BulletPhysicsPlugin/blob/dev/screenshots/UE_viewport.png?raw=true)
+| Physics asset | Editor |
+|:-------------:|:------:|
+| ![alt text](https://github.com/Yadhu-S/BulletPhysicsPlugin/blob/dev/screenshots/UE_physics_view.png?raw=true) | ![alt text](https://github.com/Yadhu-S/BulletPhysicsPlugin/blob/dev/screenshots/UE_viewport.png?raw=true) |
+
 
 
 ## Status
