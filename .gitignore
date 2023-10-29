@@ -97,4 +97,5 @@ Export/**
 # Unignore .gitignore
 !.gitignore
 
-#shared objects
+#ignore linux libs
+Source/ThirdParty/BulletPhysicsEngineLibrary/lib/linux/**
