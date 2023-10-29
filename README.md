@@ -1,6 +1,11 @@
 # BulletPhysicsPlugin
 Bullet Physics SDK for Unreal Engine 4.26+
 
+## Screenshots
+![alt text](https://github.com/Yadhu-S/BulletPhysicsPlugin/blob/dev/screenshots/UE_physics_view.png?raw=true)
+![alt text](https://github.com/Yadhu-S/BulletPhysicsPlugin/blob/dev/screenshots/UE_viewport.png?raw=true)
+
+
 ## Status
 Implementing and adding support for a custom USkeletalMeshComponent, right now, it there is no support for compound
 physics shape. Just box primitive
@@ -31,6 +36,7 @@ Clone this repo into your `Engine/Plugin` directory, recompile.
 3. `make` , had to use `make -j20` because, compile was not using all cores for some reason.
 4. `sudo make install`
 5. Link the libs from `/usr/lib` to the `ThirdParty` folder
+
 
 ### Credits
 Read this [blog](https://www.stevestreeting.com/2020/07/26/using-bullet-for-physics-in-ue4/). The code in this plugin
