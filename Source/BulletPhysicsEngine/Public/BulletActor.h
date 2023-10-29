@@ -93,7 +93,6 @@ UCLASS()
 		// Custom debug interface
 		btIDebugDraw* BtDebugDraw;
 		// Dynamic bodies
-		TArray<btRigidBody*> BtRigidBodies;
 		// Static colliders
 		TArray<btCollisionObject*> BtStaticObjects;
 		btCollisionObject* procbody;
@@ -121,7 +120,8 @@ UCLASS()
 			btVector3 Inertia; // because we like to precalc this
 		};
 		TArray<CachedDynamicShapeData> CachedDynamicShapes;
-
+	public:
+		TArray<btRigidBody*> BtRigidBodies;
 	public:
 		btCollisionShape* GetBoxCollisionShape(const FVector& Dimensions);
 

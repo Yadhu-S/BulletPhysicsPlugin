@@ -2,6 +2,7 @@
 
 
 #include "BulletActor.h"
+#include "LinearMath/btDefaultMotionState.h"
 #include "motionstate.h"
 
 
@@ -449,7 +450,7 @@ btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, btCollisionShape* Collisi
 	const btRigidBody::btRigidBodyConstructionInfo rbInfo(Mass*10, MotionState, CollisionShape, Inertia*10);
 	btRigidBody* body = new btRigidBody(rbInfo);
 	body->setUserPointer(Actor);
-	body->setActivationState(ACTIVE_TAG);
+	body->setActivationState(DISABLE_DEACTIVATION);
 	body->setDeactivationTime(0);
 	//body->setWorldTransform(BulletHelpers::ToBt(GetTransform(), Origin)); 
 	BtWorld->addRigidBody(body);
@@ -459,17 +460,15 @@ btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, btCollisionShape* Collisi
 
 }
 
-btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel, FTransform Transform,FTransform LocalTransform, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution)
+btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel, FTransform transform,FTransform localTransform, btCollisionShape* collisionShape, btVector3 inertia, float mass, float friction, float restitution)
 {
 
 
-	Transform.SetLocation(Transform.GetLocation() - LocalTransform.GetLocation());
 	FVector Origin = GetActorLocation();
-	BulletUEMotionState* MotionState = new BulletUEMotionState(skel, Origin, Transform, LocalTransform);
-	const btRigidBody::btRigidBodyConstructionInfo rbInfo(Mass, MotionState, CollisionShape, Inertia);
+	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, Origin, transform, localTransform);
+	const btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, objMotionState, collisionShape, inertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
-	body->setWorldTransform(BulletHelpers::ToBt(Transform, Origin));
-	body->setUserPointer(GetOwner());
+	//body->setUserPointer(GetOwner());
 	body->setActivationState(DISABLE_DEACTIVATION);
 	body->setDeactivationTime(0);
 	BtWorld->addRigidBody(body);
@@ -500,12 +499,15 @@ void ABulletActor::SetPhysicsState(int ID, FTransform transforms, FVector Veloci
 
 void ABulletActor::GetPhysicsState(int ID, FTransform& transforms, FVector& Velocity, FVector& AngularVelocity,FVector& Force)
 {
+	if (BtRigidBodies.Num()<=ID) {
+		UE_LOG(LogTemp, Warning, TEXT("No rigid "));
+		return;
+	}
 	if (BtRigidBodies[ID]) {
 		transforms= BulletHelpers::ToUE( BtRigidBodies[ID]->getWorldTransform(),GetActorLocation()) ;
 		Velocity = BulletHelpers::ToUEPos(BtRigidBodies[ID]->getLinearVelocity(), GetActorLocation());
 		AngularVelocity = BulletHelpers::ToUEPos(BtRigidBodies[ID]->getAngularVelocity(), FVector(0));
 		Force = BulletHelpers::ToUEPos(BtRigidBodies[ID]->getTotalForce(), GetActorLocation());
-		//AngularForce = BulletHelpers::ToUEPos(BtRigidBodies[ID]->getAngularVelocity(), FVector(0));
 	}
 }
 

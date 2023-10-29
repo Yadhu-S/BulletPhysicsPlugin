@@ -1,4 +1,5 @@
 #include "BulletSkeletalMeshComponent.h"
+#include "DrawDebugHelpers.h"
 #include "Math/Rotator.h"
 #include "PhysicsEngine/PhysicsAsset.h"
 
@@ -6,6 +7,19 @@
 
 UBulletSkeletalMeshComponent::UBulletSkeletalMeshComponent()
 {
+	// Disable physics simulation
+	// We don't want UE to mess with the physics
+	SetSimulatePhysics(false);
+
+	// Set the physics simulation mode to None
+	SetPhysicsLinearVelocity(FVector::ZeroVector);
+	SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+	SetPhysicsBlendWeight(0.0f);
+	SetPhysicsMaxAngularVelocityInRadians(0.0f);
+	SetAllPhysicsLinearVelocity(FVector::ZeroVector);
+
+	// Optionally, disable collision if needed
+	SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void UBulletSkeletalMeshComponent::BeginPlay()
@@ -24,34 +38,70 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 	}
 	// Get the physics asset associated with the skeletal mesh
 	UPhysicsAsset* PhysicsAsset = GetPhysicsAsset();
-	if (PhysicsAsset)
+	if (!PhysicsAsset)
 	{
-		// Iterate over the bodies in the physics asset
-		for (const USkeletalBodySetup* bodySetup : PhysicsAsset->SkeletalBodySetups)
-		{
-			for (FKBoxElem box : bodySetup->AggGeom.BoxElems){
-				FVector Dimensions = FVector(box.X, box.Y, box.Z) * box.GetTransform().GetScale3D();
-				btCollisionShape* Shape = BulletActor -> GetBoxCollisionShape(Dimensions);
-				btVector3 inertia;
-				Shape->calculateLocalInertia(2000, inertia);
-				BulletOwnerRigidBody = BulletActor->AddRigidBody(
-						this,
-						box.GetTransform() * GetComponentTransform(),
-						box.GetTransform(),
-						Shape,
-						inertia,
-						2000,
-						2,
-						0);
-
-				// For now, I need only 1 box. TODO: Make this general purpose
-				break;
-			}
-			UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: done setting up own rigid body"));
-		}
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: could not get physics asset, configure physics asset in your editor"));
 		return;
 	}
-	UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset:: got empty physics asset"));
+	btCompoundShape* compoundShape = nullptr;
+	btCollisionShape* Shape = nullptr;
+	btVector3 inertia;
+	FTransform LocalTransform = FTransform::Identity;
+	FTransform FinalTransform = FTransform::Identity;
+	// Iterate over the bodies in the physics asset
+	for (const USkeletalBodySetup* bodySetup : PhysicsAsset->SkeletalBodySetups)
+	{
+		// if the total makes up more than 1, we have a compound shape configured in skeletalmeshcomponent
+		if( bodySetup->AggGeom.BoxElems.Num() + bodySetup->AggGeom.SphereElems.Num() + bodySetup->AggGeom.SphylElems.Num() > 1){
+			compoundShape = new btCompoundShape();
+		}
+
+		for (FKBoxElem box : bodySetup->AggGeom.BoxElems){
+			FVector Dimensions = FVector(box.X, box.Y, box.Z) * box.GetTransform().GetScale3D();
+			Shape = BulletActor -> GetBoxCollisionShape(Dimensions);
+			if (compoundShape) {
+				compoundShape->addChildShape(BulletHelpers::ToBt(box.GetTransform(),GetComponentLocation()), Shape);
+				continue;
+			}
+			LocalTransform = box.GetTransform();
+			FinalTransform = LocalTransform * GetComponentTransform();
+		}
+
+		// Why are capsules called "SphylElemes", I don't know, flies over my head I guess.
+		for (FKSphylElem capsule : bodySetup->AggGeom.SphylElems){
+			FVector scale = capsule.GetTransform().GetScale3D();
+			// Capsules are in Z in UE, in Y in Bullet, so roll -90
+			FTransform shapeXform(capsule.Rotation + FRotator(0, 0, -90), capsule.Center);
+			capsule.SetTransform(shapeXform);
+			Shape =BulletActor->GetCapsuleCollisionShape(capsule.Radius * scale.X, capsule.Length * scale.Z);
+			if (compoundShape) {
+				compoundShape->addChildShape(BulletHelpers::ToBt(capsule.GetTransform(),GetComponentLocation()), Shape);
+				continue;
+			}
+			LocalTransform = capsule.GetTransform();
+			FinalTransform = LocalTransform * GetComponentTransform();
+		}
+
+
+		for (FKSphereElem sphere : bodySetup->AggGeom.SphereElems){
+			FVector scale = sphere.GetTransform().GetScale3D();
+			Shape = BulletActor->GetSphereCollisionShape(sphere.Radius * scale.X) ;
+			if (compoundShape) {
+				compoundShape->addChildShape(BulletHelpers::ToBt(sphere.GetTransform(),GetComponentLocation()), Shape);
+				continue;
+			}
+			LocalTransform = sphere.GetTransform();
+			FinalTransform = LocalTransform * GetComponentTransform();
+		}
+
+		Shape->calculateLocalInertia(Mass, inertia);
+		if (compoundShape) {
+			Shape = compoundShape;
+			FinalTransform = LocalTransform = GetComponentTransform();
+		}
+		BulletOwnerRigidBody = BulletActor->AddRigidBody(this, FinalTransform, LocalTransform, Shape, inertia, Mass, Friction, Restitution);
+		UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: done setting up own rigid body"));
+	}
 }
 
 void UBulletSkeletalMeshComponent::BulletAddForce(FVector Force, FVector Location)
@@ -65,7 +115,7 @@ void UBulletSkeletalMeshComponent::GetPhysicsState(FTransform& Transform, FVecto
 {
 	if (BulletOwnerRigidBody) {
 		Transform= BulletHelpers::ToUE( BulletOwnerRigidBody->getWorldTransform(),GetComponentLocation()) ;
-		Velocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getLinearVelocity(), GetComponentLocation());
+		Velocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getLinearVelocity(), FVector(0,0,0));
 		AngularVelocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getAngularVelocity(), FVector(0));
 		Force = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getTotalForce(), GetComponentLocation());
 	}

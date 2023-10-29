@@ -25,6 +25,16 @@ UCLASS()
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
 			void GetPhysicsState(FTransform& Transform, FVector& Velocity, FVector& AngularVelocity,FVector& Force);
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+			float Mass = 2000.0f;
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+			float Friction=2.0f;
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+			float Restitution=0.5f;
+
 	private:
 		btRigidBody* BulletOwnerRigidBody;
 

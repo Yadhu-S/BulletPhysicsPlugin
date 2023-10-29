@@ -40,7 +40,7 @@ class BulletDebugDraw : public btIDebugDraw
 
 		virtual void draw3dText(const btVector3& location, const char* textString) override
 		{
-			// Your implementation for draw3dText goes here
+			DrawDebugString(World, BulletHelpers::ToUEPos(location,WorldOrigin), textString);
 		}
 
 		virtual void setDebugMode(int debugMode) override
