@@ -7,21 +7,15 @@ Bullet Physics SDK for Unreal Engine 4.26+
 
 
 ## Status
-Implementing and adding support for a custom USkeletalMeshComponent, right now, it there is no support for compound
-physics shape. Just box primitive
-
+Implementing and adding support for a custom USkeletalMeshComponent. It supports compound shapes.
 *This is a work in progress (very WIP) :), use the originally forked repo mentioned below if you want something usable.*
-
-## Todo
-1. Add support for all physics shape, primitives first and compound shapes 
-
-
 
 ### Windows
 Clone this repo into your `Engine/Plugin` directory, recompile.
 
 ### Linux
 Clone this repo into your `Engine/Plugin` directory, recompile.
+*Note: Debugging does not work.*
 
 #### Manual compilation
 1. Clone [bullet](https://github.com/bulletphysics/bullet3)
