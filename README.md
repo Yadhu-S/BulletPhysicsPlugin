@@ -1,4 +1,4 @@
-# BulletPhysicsPlugin
+# BulletPhysicsPlugin for Unreal Engine
 Bullet Physics SDK for Unreal Engine 4.26+
 
 ## Screenshots
@@ -19,7 +19,7 @@ Clone this repo into your `Engine/Plugin` directory, recompile.
 Clone this repo into your `Engine/Plugin` directory, recompile.
 *Note: Debugging does not work.*
 
-#### Manual compilation
+#### Manual compilation(bullet 3)
 1. Clone [bullet](https://github.com/bulletphysics/bullet3)
 2. Compile, `cmake \
     -DLIBRARY_OUTPUT_PATH=<PATH TO THIS REPO>/BulletPhysicsPlugin/Source/ThirdParty/BulletPhysicsEngineLibrary/lib/linux/Debug\
@@ -30,8 +30,6 @@ Clone this repo into your `Engine/Plugin` directory, recompile.
     .`
 	Replace build type as required.
 3. `make` , had to use `make -j20` because, compile was not using all cores for some reason.
-4. `sudo make install`
-5. Link the libs from `/usr/lib` to the `ThirdParty` folder
 
 
 ### Credits
