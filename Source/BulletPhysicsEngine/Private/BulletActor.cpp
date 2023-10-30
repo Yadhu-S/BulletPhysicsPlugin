@@ -455,27 +455,22 @@ btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, btCollisionShape* Collisi
 	//body->setWorldTransform(BulletHelpers::ToBt(GetTransform(), Origin)); 
 	BtWorld->addRigidBody(body);
 	BtRigidBodies.Add(body);
-
 	return body;
-
 }
 
-btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel, FTransform transform,FTransform localTransform, btCollisionShape* collisionShape, btVector3 inertia, float mass, float friction, float restitution)
+btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel,FTransform localTransform, btCollisionShape* collisionShape, btVector3 inertia, float mass, float friction, float restitution)
 {
 
-
-	FVector Origin = GetActorLocation();
-	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, Origin, transform, localTransform);
+	FVector origin = GetActorLocation();
+	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, origin, localTransform);
 	const btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, objMotionState, collisionShape, inertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
-	//body->setUserPointer(GetOwner());
+	body->setUserPointer(GetOwner());
 	body->setActivationState(DISABLE_DEACTIVATION);
 	body->setDeactivationTime(0);
 	BtWorld->addRigidBody(body);
 	BtRigidBodies.Add(body);
-
 	return body;
-
 }
 
 void ABulletActor::StepPhysics(float DeltaSeconds, int substeps)
@@ -517,13 +512,13 @@ void ABulletActor::ResetSim()
 	for (int i = 0; i < BtRigidBodies.Num(); i++)
 	{
 		BtWorld->removeRigidBody(BtRigidBodies[i]);
-		BtRigidBodies[i]->setActivationState(ACTIVE_TAG);
+		BtRigidBodies[i]->setActivationState(DISABLE_DEACTIVATION);
 		BtRigidBodies[i]->setDeactivationTime(0);
 		BtRigidBodies[i]->clearForces();
 	}
 
 	BtWorld = new btDiscreteDynamicsWorld(BtCollisionDispatcher, BtBroadphase, BtConstraintSolver, BtCollisionConfig);
-	BtWorld->setGravity(btVector3(0, 0, -9.8));
+	BtWorld->setGravity(btVector3(Gravity.X,Gravity.Y, Gravity.Z));
 	BtBroadphase->resetPool(BtCollisionDispatcher);
 	BtConstraintSolver->reset();
 	for (int i = 0; i < BtRigidBodies.Num(); i++)

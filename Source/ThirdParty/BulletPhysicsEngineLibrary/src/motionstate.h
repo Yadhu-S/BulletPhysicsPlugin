@@ -60,7 +60,6 @@ class BULLETPHYSICSENGINE_API BulletUEMotionState: public btMotionState
 		// Bullet is made local so that all sims are close to origin
 		// This world origin must be in *UE dimensions*
 		FVector WorldOrigin;
-		FTransform WorldTransform;
 		FTransform LocalTransform;
 		btTransform CenterOfMassTransform;
 
@@ -70,8 +69,8 @@ class BULLETPHYSICSENGINE_API BulletUEMotionState: public btMotionState
 		{
 
 		}
-		BulletUEMotionState(USkeletalMeshComponent* ParentActor, const FVector& WorldCentre, const FTransform& worldTrans,const FTransform& localTransform, const btTransform& CenterOfMassOffset = btTransform::getIdentity())
-			: Parent(ParentActor), WorldOrigin(WorldCentre),WorldTransform(worldTrans), LocalTransform(localTransform),CenterOfMassTransform(CenterOfMassOffset)
+		BulletUEMotionState(USkeletalMeshComponent* ParentActor, const FVector& WorldCentre,const FTransform& localTransform, const btTransform& CenterOfMassOffset = btTransform::getIdentity())
+			: Parent(ParentActor), WorldOrigin(WorldCentre),LocalTransform(localTransform),CenterOfMassTransform(CenterOfMassOffset)
 
 		{
 		}
@@ -79,8 +78,10 @@ class BULLETPHYSICSENGINE_API BulletUEMotionState: public btMotionState
 		///synchronizes world transform from UE to physics (typically only called at start)
 		void getWorldTransform(btTransform& OutCenterOfMassWorldTrans) const override
 		{
-
-			OutCenterOfMassWorldTrans = BulletHelpers::ToBt(WorldTransform, WorldOrigin)*CenterOfMassTransform.inverse();
+			if (Parent.IsValid())
+			{
+				OutCenterOfMassWorldTrans = BulletHelpers::ToBt(Parent->GetComponentTransform(), WorldOrigin)*CenterOfMassTransform.inverse();
+			}
 		}
 
 		///synchronizes world transform from physics to UE
