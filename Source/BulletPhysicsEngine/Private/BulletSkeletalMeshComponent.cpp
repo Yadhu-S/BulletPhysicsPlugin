@@ -45,7 +45,6 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 	}
 	btCompoundShape* compoundShape = nullptr;
 	btCollisionShape* shape = nullptr;
-	btVector3 inertia;
 	FTransform physicsAssetLocalTransform = FTransform::Identity;
 	// Iterate over the bodies in the physics asset
 	for (const USkeletalBodySetup* bodySetup : PhysicsAsset->SkeletalBodySetups)
@@ -90,11 +89,10 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 			physicsAssetLocalTransform = sphere.GetTransform();
 		}
 
-		shape->calculateLocalInertia(Mass, inertia);
 		if (compoundShape) {
 			shape = compoundShape;
 		}
-		BulletOwnerRigidBody = BulletActor->AddRigidBody(this, physicsAssetLocalTransform, shape, inertia, Mass, Friction, Restitution);
+		BulletOwnerRigidBody = BulletActor->AddRigidBody(this, physicsAssetLocalTransform, shape, Mass, Friction, Restitution);
 		UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: done setting up own rigid body"));
 	}
 }

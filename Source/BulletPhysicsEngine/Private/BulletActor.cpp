@@ -135,9 +135,9 @@ void ABulletActor::AddImpulse( int ID, FVector Impulse, FVector Location)
 	BtRigidBodies[ID]->applyImpulse(BulletHelpers::ToBtDir(Impulse, true), BulletHelpers::ToBtPos(Location, GetActorLocation()));
 }
 
-void ABulletActor::AddForce( int ID, FVector Impulse, FVector Location)
+void ABulletActor::AddForce( int id, FVector force, FVector location)
 {
-	BtRigidBodies[ID]->applyForce(BulletHelpers::ToBtDir(Impulse, true), BulletHelpers::ToBtPos(Location, GetActorLocation()));
+	BtRigidBodies[id]->applyForce(BulletHelpers::ToBtDir(force, true), BulletHelpers::ToBtPos(location, GetActorLocation()));
 }
 
 
@@ -452,16 +452,16 @@ btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, btCollisionShape* Collisi
 	body->setUserPointer(Actor);
 	body->setActivationState(DISABLE_DEACTIVATION);
 	body->setDeactivationTime(0);
-	//body->setWorldTransform(BulletHelpers::ToBt(GetTransform(), Origin)); 
 	BtWorld->addRigidBody(body);
 	BtRigidBodies.Add(body);
 	return body;
 }
 
-btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel,FTransform localTransform, btCollisionShape* collisionShape, btVector3 inertia, float mass, float friction, float restitution)
+btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel,FTransform localTransform, btCollisionShape* collisionShape, float mass, float friction, float restitution)
 {
-
 	FVector origin = GetActorLocation();
+	btVector3 inertia;
+	collisionShape->calculateLocalInertia(mass, inertia);
 	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, origin, localTransform);
 	const btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, objMotionState, collisionShape, inertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
