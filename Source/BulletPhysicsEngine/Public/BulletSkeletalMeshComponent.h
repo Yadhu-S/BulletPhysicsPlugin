@@ -24,6 +24,12 @@ UCLASS()
 			void BulletAddForce(FVector Force, FVector Location);
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void BulletAddCentralImpulse(FVector Impulse);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			void BulletAddImpulseAtLocation(FVector Impulse, FVector Location);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
 			void GetPhysicsState(FTransform& Transform, FVector& Velocity, FVector& AngularVelocity,FVector& Force);
 
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
@@ -35,6 +41,8 @@ UCLASS()
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
 			float Restitution=0.5f;
 
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+			FVector BulletGetCentreOfMass();
 	private:
 		btRigidBody* BulletOwnerRigidBody;
 

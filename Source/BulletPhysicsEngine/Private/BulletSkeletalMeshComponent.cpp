@@ -99,17 +99,44 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 
 void UBulletSkeletalMeshComponent::BulletAddForce(FVector Force, FVector Location)
 {
-	if (BulletOwnerRigidBody){
-		BulletOwnerRigidBody->applyForce(BulletHelpers::ToBtDir(Force, true), BulletHelpers::ToBtPos(Location, GetComponentLocation()));
+	if (!BulletOwnerRigidBody){
+		return;
 	}
+	BulletOwnerRigidBody->applyForce(BulletHelpers::ToBtDir(Force, true), BulletHelpers::ToBtPos(Location, GetComponentLocation()));
+}
+
+void UBulletSkeletalMeshComponent::BulletAddImpulseAtLocation(FVector Impulse, FVector Location)
+{
+	if (!BulletOwnerRigidBody){
+		return;
+	}
+	BulletOwnerRigidBody->applyImpulse(BulletHelpers::ToBtDir(Impulse, true), BulletHelpers::ToBtPos(Location, GetComponentLocation()));
+}
+
+FVector UBulletSkeletalMeshComponent::BulletGetCentreOfMass()
+{
+	if (!BulletOwnerRigidBody){
+		return FVector(0);
+	}
+	return BulletHelpers::ToUEPos(BulletOwnerRigidBody->getCenterOfMassPosition(),FVector(0));
+}
+
+void UBulletSkeletalMeshComponent::BulletAddCentralImpulse(FVector Impulse)
+{
+	if (!BulletOwnerRigidBody){
+		return;
+	}
+	return BulletOwnerRigidBody->applyCentralImpulse(BulletHelpers::ToBtDir(Impulse, true));
 }
 
 void UBulletSkeletalMeshComponent::GetPhysicsState(FTransform& Transform, FVector& Velocity, FVector& AngularVelocity,FVector& Force)
 {
-	if (BulletOwnerRigidBody) {
-		Transform= BulletHelpers::ToUE( BulletOwnerRigidBody->getWorldTransform(),GetComponentLocation()) ;
-		Velocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getLinearVelocity(), FVector(0,0,0));
-		AngularVelocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getAngularVelocity(), FVector(0));
-		Force = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getTotalForce(), GetComponentLocation());
+	if (!BulletOwnerRigidBody) {
+		return;
 	}
+	Transform= BulletHelpers::ToUE( BulletOwnerRigidBody->getWorldTransform(),GetComponentLocation()) ;
+	Velocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getLinearVelocity(), FVector(0));
+	btVector3 velVector = BulletOwnerRigidBody->getLinearVelocity();
+	AngularVelocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getAngularVelocity(), FVector(0));
+	Force = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getTotalForce(), GetComponentLocation());
 }
