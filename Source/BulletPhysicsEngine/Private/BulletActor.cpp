@@ -460,23 +460,25 @@ btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, btCollisionShape* Collisi
 btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel,FTransform localTransform, btCollisionShape* collisionShape, float mass, float friction, float restitution)
 {
 	FVector origin = GetActorLocation();
-	btVector3 inertia;
+	btVector3 inertia(0,0,0);
 	collisionShape->calculateLocalInertia(mass, inertia);
 	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, origin, localTransform);
+	objMotionState->setWorldTransform(btTransform::getIdentity());
 	const btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, objMotionState, collisionShape, inertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
 	body->setUserPointer(GetOwner());
 	body->setActivationState(DISABLE_DEACTIVATION);
 	body->setDeactivationTime(0);
+	body->setCenterOfMassTransform(btTransform::getIdentity());
+
 	BtWorld->addRigidBody(body);
 	BtRigidBodies.Add(body);
 	return body;
 }
 
-void ABulletActor::StepPhysics(float DeltaSeconds, int substeps)
+void ABulletActor::StepPhysics(float deltaSeconds, int substeps)
 {
-	BtWorld->stepSimulation(DeltaSeconds, substeps, 1. / 60);
-
+	BtWorld->stepSimulation(deltaSeconds, substeps, 1. / 60);
 }
 
 void ABulletActor::SetPhysicsState(int ID, FTransform transforms, FVector Velocity, FVector AngularVelocity, FVector& Force)
@@ -486,7 +488,6 @@ void ABulletActor::SetPhysicsState(int ID, FTransform transforms, FVector Veloci
 		BtRigidBodies[ID]->setWorldTransform(BulletHelpers::ToBt(transforms, GetActorLocation()));
 		BtRigidBodies[ID]->setLinearVelocity(BulletHelpers::ToBtPos(Velocity, GetActorLocation()));
 		BtRigidBodies[ID]->setAngularVelocity(BulletHelpers::ToBtPos(AngularVelocity, FVector(0)));
-		//BtRigidBodies[ID]->apply(BulletHelpers::ToBtPos(Velocity, GetActorLocation()));
 	}
 
 

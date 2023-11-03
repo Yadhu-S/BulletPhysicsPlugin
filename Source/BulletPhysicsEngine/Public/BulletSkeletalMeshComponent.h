@@ -17,33 +17,43 @@ UCLASS()
 	public:
 		UBulletSkeletalMeshComponent();
 
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			void LoadBulletActor(ABulletActor* bulletActor){BulletActor = bulletActor; AddOwnPhysicsAsset();};
 
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			void BulletAddForce(FVector Force, FVector Location);
 
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			void BulletAddCentralImpulse(FVector Impulse);
 
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			void BulletAddImpulseAtLocation(FVector Impulse, FVector Location);
 
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			void GetPhysicsState(FTransform& Transform, FVector& Velocity, FVector& AngularVelocity,FVector& Force);
 
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
+			void BulletSetWorldTransform(FTransform CentreOfMass, FVector Origin);
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Skeletal Mesh")
 			float Mass = 2000.0f;
 
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Skeletal Mesh")
 			float Friction=2.0f;
 
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Skeletal Mesh")
 			float Restitution=0.5f;
 
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
+			void BulletSetCenterOfMass(FTransform CentreOfMass,  FVector Origin);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			FVector BulletGetCentreOfMass();
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
+			bool BulletIsReady();
 	private:
+
 		btRigidBody* BulletOwnerRigidBody;
 
 		UPROPERTY()

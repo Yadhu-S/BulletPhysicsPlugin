@@ -97,9 +97,17 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 	}
 }
 
+bool UBulletSkeletalMeshComponent::BulletIsReady(){
+	if (!BulletOwnerRigidBody) {
+		return false;
+	}
+	return true;
+}
+
 void UBulletSkeletalMeshComponent::BulletAddForce(FVector Force, FVector Location)
 {
 	if (!BulletOwnerRigidBody){
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletAddForce: Owning body is null. Unable to add force"));
 		return;
 	}
 	BulletOwnerRigidBody->applyForce(BulletHelpers::ToBtDir(Force, true), BulletHelpers::ToBtPos(Location, GetComponentLocation()));
@@ -108,6 +116,7 @@ void UBulletSkeletalMeshComponent::BulletAddForce(FVector Force, FVector Locatio
 void UBulletSkeletalMeshComponent::BulletAddImpulseAtLocation(FVector Impulse, FVector Location)
 {
 	if (!BulletOwnerRigidBody){
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletAddImpulseAtLocation: Owning body is null. Unable to add impulse"));
 		return;
 	}
 	BulletOwnerRigidBody->applyImpulse(BulletHelpers::ToBtDir(Impulse, true), BulletHelpers::ToBtPos(Location, GetComponentLocation()));
@@ -116,6 +125,7 @@ void UBulletSkeletalMeshComponent::BulletAddImpulseAtLocation(FVector Impulse, F
 FVector UBulletSkeletalMeshComponent::BulletGetCentreOfMass()
 {
 	if (!BulletOwnerRigidBody){
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletGetCentreOfMass: Owning body is null.Unable to get Center of mass"));
 		return FVector(0);
 	}
 	return BulletHelpers::ToUEPos(BulletOwnerRigidBody->getCenterOfMassPosition(),FVector(0));
@@ -124,19 +134,38 @@ FVector UBulletSkeletalMeshComponent::BulletGetCentreOfMass()
 void UBulletSkeletalMeshComponent::BulletAddCentralImpulse(FVector Impulse)
 {
 	if (!BulletOwnerRigidBody){
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletAddCentralImpulse: Owning body is null. Unable to add impulse"));
 		return;
 	}
 	return BulletOwnerRigidBody->applyCentralImpulse(BulletHelpers::ToBtDir(Impulse, true));
 }
 
+void UBulletSkeletalMeshComponent::BulletSetCenterOfMass(FTransform CentreOfMass, FVector Origin)
+{
+	if (!BulletOwnerRigidBody){
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletSetCenterOfMass: Owning body is null. Unable to set Centre of mass"));
+		return;
+	}
+	BulletOwnerRigidBody->setCenterOfMassTransform(BulletHelpers::ToBt(CentreOfMass,Origin));
+}
+
+void UBulletSkeletalMeshComponent::BulletSetWorldTransform(FTransform CentreOfMass, FVector Origin)
+{
+	if (!BulletOwnerRigidBody){
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletSetCenterOfMass: Owning body is null. Unable to set Centre of mass"));
+		return;
+	}
+	BulletOwnerRigidBody->getMotionState()->setWorldTransform(BulletHelpers::ToBt(CentreOfMass,Origin));
+}
+
 void UBulletSkeletalMeshComponent::GetPhysicsState(FTransform& Transform, FVector& Velocity, FVector& AngularVelocity,FVector& Force)
 {
 	if (!BulletOwnerRigidBody) {
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::GetPhysicsState: Owning body is null. Unable to fetch physics state"));
 		return;
 	}
 	Transform= BulletHelpers::ToUE( BulletOwnerRigidBody->getWorldTransform(),GetComponentLocation()) ;
 	Velocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getLinearVelocity(), FVector(0));
-	btVector3 velVector = BulletOwnerRigidBody->getLinearVelocity();
 	AngularVelocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getAngularVelocity(), FVector(0));
 	Force = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getTotalForce(), GetComponentLocation());
 }

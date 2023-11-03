@@ -120,7 +120,7 @@ UCLASS()
 			btVector3 Inertia; // because we like to precalc this
 		};
 		TArray<CachedDynamicShapeData> CachedDynamicShapes;
-	public:
+
 		TArray<btRigidBody*> BtRigidBodies;
 	public:
 		btCollisionShape* GetBoxCollisionShape(const FVector& Dimensions);
@@ -143,7 +143,7 @@ UCLASS()
 		// Called when the game starts or when spawned
 		virtual void BeginPlay() override;
 
-		virtual void Tick(float DeltaTime) override;
+		virtual void Tick(float deltaTime) override;
 
 	private:
 		typedef const std::function<void(btCollisionShape* /*SingleShape*/, const FTransform& /*RelativeXform*/)>& PhysicsGeometryCallback;
