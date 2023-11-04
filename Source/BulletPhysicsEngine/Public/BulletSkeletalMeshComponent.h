@@ -5,6 +5,8 @@
 
 #include "BulletActor.h"
 #include "BulletDynamics/Dynamics/btRigidBody.h"
+#include "Delegates/DelegateCombinations.h"
+
 #include "BulletSkeletalMeshComponent.generated.h"
 
 
@@ -56,8 +58,7 @@ UCLASS()
 
 		btRigidBody* BulletOwnerRigidBody;
 
-		UPROPERTY()
-			ABulletActor* BulletActor;
+		ABulletActor* BulletActor;
 
 		void AddOwnPhysicsAsset();
 	protected:

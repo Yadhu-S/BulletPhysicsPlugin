@@ -381,6 +381,8 @@ btCollisionShape* ABulletActor::GetConvexHullCollisionShape(UBodySetup* BodySetu
 }
 
 
+
+
 const ABulletActor::CachedDynamicShapeData& ABulletActor::GetCachedDynamicShapeData(AActor* Actor, float Mass)
 {
 	// We re-use compound shapes based on (leaf) BP class
@@ -506,6 +508,57 @@ void ABulletActor::GetPhysicsState(int ID, FTransform& transforms, FVector& Velo
 		Force = BulletHelpers::ToUEPos(BtRigidBodies[ID]->getTotalForce(), GetActorLocation());
 	}
 }
+
+btCollisionObject* ABulletActor::GetStaticObject(int ID)
+{
+	return BtStaticObjects[ID];
+}
+
+void ABulletActor::RayTestSingle(FVector Start, FVector End, int CheckObjectID,std::function<void(const FVector&, const FVector&, const bool&)> HitCallback)
+{// Set up the raycast parameters
+	if (!BtWorld) {
+		UE_LOG(LogTemp, Warning, TEXT("ABulletActor::RayTestSingle: loaded wihout a bullet world't work"));
+		return;
+	} 
+
+	btVector3 fromV = BulletHelpers::ToBtPos(Start, FVector(0));
+	btVector3 toV = BulletHelpers::ToBtPos(End, FVector(0));
+	btCollisionWorld::ClosestRayResultCallback rayCallback(fromV, toV);
+
+	btTransform fromTransform, toTransform;
+	fromTransform.setIdentity();
+	fromTransform.setOrigin(fromV);
+
+	toTransform.setIdentity();
+	toTransform.setOrigin(toV);
+
+	BtWorld->rayTestSingle(
+			fromTransform,
+			toTransform,
+			GetStaticObject(CheckObjectID) ,
+			GetStaticObject(CheckObjectID)->getCollisionShape(),
+			GetStaticObject(CheckObjectID)->getWorldTransform(),
+			rayCallback
+			);
+
+	HitCallback(
+			BulletHelpers::ToUEPos(rayCallback.m_hitPointWorld, FVector(0)),
+			BulletHelpers::ToUEPos(rayCallback.m_hitNormalWorld, FVector(0)),
+			rayCallback.hasHit()
+			);
+}
+
+
+void ABulletActor::RayTestSingle(FVector start, FVector end, int CheckObjectID, const FRayTestSingleCallback HitCallback)
+{
+	auto rCallBack = [HitCallback](const FVector& HitLoc, const FVector& HitNormal, const bool& HasHit)
+	{
+		bool hasHit = HasHit;
+		HitCallback.ExecuteIfBound(HitLoc,HitNormal, hasHit);
+	};
+	RayTestSingle(start, end, CheckObjectID, rCallBack);
+}
+
 
 void ABulletActor::ResetSim()
 {

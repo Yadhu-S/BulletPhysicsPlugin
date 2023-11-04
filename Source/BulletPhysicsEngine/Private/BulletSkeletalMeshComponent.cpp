@@ -169,3 +169,5 @@ void UBulletSkeletalMeshComponent::GetPhysicsState(FTransform& Transform, FVecto
 	AngularVelocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getAngularVelocity(), FVector(0));
 	Force = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getTotalForce(), GetComponentLocation());
 }
+
+

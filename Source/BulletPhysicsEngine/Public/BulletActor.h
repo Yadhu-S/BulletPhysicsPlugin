@@ -12,7 +12,12 @@
 #include "Components/ShapeComponent.h"
 #include <functional>
 #include "GameFramework/Actor.h"
+#include "Templates/Function.h"
+
 #include "BulletActor.generated.h"
+
+
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FRayTestSingleCallback, const FVector&, To, const FVector&, From, bool&, HasHit);
 
 
 UCLASS()
@@ -78,6 +83,11 @@ UCLASS()
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
 			float RandVar;
 
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|RayCast")
+			void RayTestSingle(FVector start, FVector end, int CheckObjectID, const FRayTestSingleCallback HitCallback);
+
+		void RayTestSingle(FVector Start, FVector End, int CheckObjectID, std::function<void(const FVector&, const FVector&, const bool&)> HitCallback);
+
 	private:
 		// Bullet section
 		// Global objects
@@ -123,6 +133,10 @@ UCLASS()
 
 		TArray<btRigidBody*> BtRigidBodies;
 	public:
+		btDiscreteDynamicsWorld* GetBulletWorld(){return BtWorld;};
+
+		void RayTestSingle(FVector Start, FVector End, int CheckObjectID, void (*HitCallback)(const FVector&, const FVector&));
+
 		btCollisionShape* GetBoxCollisionShape(const FVector& Dimensions);
 
 		btCollisionShape* GetSphereCollisionShape(float Radius);
@@ -139,6 +153,8 @@ UCLASS()
 
 		btRigidBody* AddRigidBody(USkeletalMeshComponent* skel,FTransform localTransform, btCollisionShape* collisionShape, float Mass, float Friction, float Restitution);
 
+		btCollisionObject* GetStaticObject(int ID);
+
 	protected:
 		// Called when the game starts or when spawned
 		virtual void BeginPlay() override;
@@ -149,8 +165,6 @@ UCLASS()
 		typedef const std::function<void(btCollisionShape* /*SingleShape*/, const FTransform& /*RelativeXform*/)>& PhysicsGeometryCallback;
 
 		void SetupStaticGeometryPhysics(TArray<AActor*> Actors, float Friction, float Restitution);
-
-		btDiscreteDynamicsWorld* GetBulletWorld(){return BtWorld;};
 
 		void ExtractPhysicsGeometry(AActor* Actor, PhysicsGeometryCallback CB);
 
