@@ -47,13 +47,19 @@ UCLASS()
 			float Restitution=0.5f;
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
-			void BulletSetCenterOfMass(FTransform CentreOfMass,  FVector Origin);
+			void BulletSetCenterOfMass(FTransform CentreOfMass);
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			FVector BulletGetCentreOfMass();
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			bool BulletIsReady();
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
+			float BulletGetBodyMass();
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
+			FVector BulletGetVelocityAt(FVector RelLoc);
 	private:
 
 		btRigidBody* BulletOwnerRigidBody;

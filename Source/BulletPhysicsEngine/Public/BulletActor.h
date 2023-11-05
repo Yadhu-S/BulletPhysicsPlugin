@@ -86,6 +86,9 @@ UCLASS()
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|RayCast")
 			void RayTestSingle(FVector start, FVector end, int CheckObjectID, const FRayTestSingleCallback HitCallback);
 
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
+			float GetGravity(){ return Gravity.Z; };
+
 		void RayTestSingle(FVector Start, FVector End, int CheckObjectID, std::function<void(const FVector&, const FVector&, const bool&)> HitCallback);
 
 	private:

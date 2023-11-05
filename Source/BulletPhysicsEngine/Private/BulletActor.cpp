@@ -38,7 +38,7 @@ void ABulletActor::BeginPlay()
 		return;
 	}
 
-#if WITH_EDITORONLY_DATA
+#if WITH_EDITOR
 	if (DebugEnabled) {
 		BtDebugDraw = new BulletDebugDraw(GetWorld(), GetActorLocation());
 		BtWorld->setDebugDrawer(BtDebugDraw);
@@ -54,7 +54,7 @@ void ABulletActor::Tick(float DeltaTime)
 	RandVar = mt->getRandSeed();
 	StepPhysics(PhysicsDeltaTime,SubSteps);
 
-#if WITH_EDITORONLY_DATA
+#if WITH_EDITOR
 	if (DebugEnabled) {
 		BtWorld->debugDrawWorld();
 	}
