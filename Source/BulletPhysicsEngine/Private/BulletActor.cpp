@@ -459,19 +459,17 @@ btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, btCollisionShape* Collisi
 	return body;
 }
 
-btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel,FTransform localTransform, btCollisionShape* collisionShape, float mass, float friction, float restitution)
+btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel,FTransform PhysicsAssetTransform, btCollisionShape* collisionShape, float mass, float friction, float restitution)
 {
-	FVector origin = GetActorLocation();
+	FVector origin = skel->GetOwner()->GetActorLocation();
 	btVector3 inertia(0,0,0);
 	collisionShape->calculateLocalInertia(mass, inertia);
-	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, origin, localTransform);
-	objMotionState->setWorldTransform(btTransform::getIdentity());
+	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, origin, PhysicsAssetTransform);
 	const btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, objMotionState, collisionShape, inertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
 	body->setUserPointer(GetOwner());
 	body->setActivationState(DISABLE_DEACTIVATION);
 	body->setDeactivationTime(0);
-	body->setCenterOfMassTransform(btTransform::getIdentity());
 
 	BtWorld->addRigidBody(body);
 	BtRigidBodies.Add(body);

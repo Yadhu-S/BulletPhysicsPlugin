@@ -35,7 +35,7 @@ UCLASS()
 			void GetPhysicsState(FTransform& Transform, FVector& Velocity, FVector& AngularVelocity,FVector& Force);
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
-			void BulletSetWorldTransform(FTransform CentreOfMass, FVector Origin);
+			void BulletSetWorldTransform(FTransform WorldTransform);
 
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Skeletal Mesh")
 			float Mass = 2000.0f;

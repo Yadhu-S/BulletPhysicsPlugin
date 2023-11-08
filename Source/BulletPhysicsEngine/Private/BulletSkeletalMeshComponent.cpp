@@ -93,7 +93,6 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 			shape = compoundShape;
 		}
 		BulletOwnerRigidBody = BulletActor->AddRigidBody(this, physicsAssetLocalTransform, shape, Mass, Friction, Restitution);
-		BulletOwnerRigidBody->setDamping(0.1,0.1);
 		UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: done setting up own rigid body"));
 	}
 }
@@ -121,10 +120,6 @@ void UBulletSkeletalMeshComponent::BulletAddImpulseAtLocation(FVector Impulse, F
 		return;
 	}
 
-
-	btVector3 forceLoc = BulletHelpers::ToBtPos(Location, FVector(0));
-
-	BulletActor->GetBulletWorld()->getDebugDrawer()->drawSphere(forceLoc, 0.1, btVector3(0,1,0));
 	BulletOwnerRigidBody->applyImpulse(BulletHelpers::ToBtDir(Impulse, true), BulletHelpers::ToBtPos(Location, GetComponentLocation()));
 }
 
@@ -155,13 +150,13 @@ void UBulletSkeletalMeshComponent::BulletSetCenterOfMass(FTransform CentreOfMass
 	BulletOwnerRigidBody->setCenterOfMassTransform(BulletHelpers::ToBt(CentreOfMass,GetComponentLocation()));
 }
 
-void UBulletSkeletalMeshComponent::BulletSetWorldTransform(FTransform CentreOfMass, FVector Origin)
+void UBulletSkeletalMeshComponent::BulletSetWorldTransform(FTransform WorldTransform)
 {
 	if (!BulletOwnerRigidBody){
-		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletSetCenterOfMass: Owning body is null. Unable to set Centre of mass"));
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletSetCenterOfMass: Owning body is null. Unable to set world transform"));
 		return;
 	}
-	BulletOwnerRigidBody->getMotionState()->setWorldTransform(BulletHelpers::ToBt(CentreOfMass,Origin));
+	BulletOwnerRigidBody->setWorldTransform(BulletHelpers::ToBt(WorldTransform,FVector(0)));
 }
 
 float UBulletSkeletalMeshComponent::BulletGetBodyMass() 
@@ -173,16 +168,14 @@ float UBulletSkeletalMeshComponent::BulletGetBodyMass()
 	return BulletOwnerRigidBody->getMass();
 }
 
-FVector UBulletSkeletalMeshComponent::BulletGetVelocityAt(FVector RelLoc) 
+FVector UBulletSkeletalMeshComponent::BulletGetVelocityAt(FVector Location) 
 {
 	if (!BulletOwnerRigidBody){
 		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletGetVelocityAt: Owning body is null."));
 		return FVector(0);
 	}
 	return BulletHelpers::ToUEPos(
-			BulletOwnerRigidBody->getVelocityInLocalPoint(
-				BulletHelpers::ToBtPos(RelLoc, FVector(0))
-				),
+			BulletOwnerRigidBody->getVelocityInLocalPoint(BulletHelpers::ToBtPos(Location, GetComponentLocation())),
 			FVector(0));
 }
 
