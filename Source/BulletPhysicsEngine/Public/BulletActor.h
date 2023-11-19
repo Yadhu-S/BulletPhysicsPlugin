@@ -52,7 +52,8 @@ UCLASS()
 			void AddForce(int ID, FVector Impulse, FVector Location);
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void StepPhysics(float DeltaSeconds, int substeps);
+			void StepPhysics(float deltaSeconds, int maxSubSteps = 1, float fixedTimeStep = 0.016666667f);
+
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
 			void SetPhysicsState(int ID, FTransform transforms, FVector Velocity, FVector AngularVelocity,FVector& Force);
@@ -71,26 +72,27 @@ UCLASS()
 
 		// Input the fixed frame rate to calculate physics
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
-			float PhysicsRefreshRate =120.0f;
+			float PhysicsRefreshRate =60.0f;
 
 		// This is independent of the frame rate in UE
 		UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Bullet Physics|Objects")
 			float PhysicsDeltaTime;
 
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
-			int SubSteps=2;
+			int SubSteps=1;
 
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
 			float RandVar;
 
-		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|RayCast")
-			void RayTestSingle(FVector start, FVector end, int CheckObjectID, const FRayTestSingleCallback HitCallback);
-
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			float GetGravity(){ return Gravity.Z; };
 
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|RayCast")
+			void RayTestSingle(FVector start, FVector end, int CheckObjectID, const FRayTestSingleCallback HitCallback);
+
 		void RayTestSingle(FVector Start, FVector End, int CheckObjectID, std::function<void(const FVector&, const FVector&, const bool&)> HitCallback);
 
+		void RayTest(FVector Start, FVector End,std::function<void(const FVector&, const FVector&, const bool&)> HitCallback);
 	private:
 		// Bullet section
 		// Global objects
@@ -135,6 +137,8 @@ UCLASS()
 		TArray<CachedDynamicShapeData> CachedDynamicShapes;
 
 		TArray<btRigidBody*> BtRigidBodies;
+
+		float Accumulator = 0.0f;
 	public:
 		btDiscreteDynamicsWorld* GetBulletWorld(){return BtWorld;};
 

@@ -10,7 +10,7 @@
 ABulletActor::ABulletActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	PhysicsDeltaTime = 1/PhysicsRefreshRate;
 
@@ -46,20 +46,21 @@ void ABulletActor::BeginPlay()
 #endif
 }
 
-// Called every frame
 void ABulletActor::Tick(float DeltaTime)
 {
-
 	Super::Tick(DeltaTime);
 	RandVar = mt->getRandSeed();
-	StepPhysics(PhysicsDeltaTime,SubSteps);
+}
+
+void ABulletActor::StepPhysics(float deltaSeconds, int maxSubSteps, float fixedTimeStep)
+{
+	BtWorld->stepSimulation(deltaSeconds,maxSubSteps,fixedTimeStep);
 
 #if WITH_EDITOR
 	if (DebugEnabled) {
 		BtWorld->debugDrawWorld();
 	}
 #endif
-
 }
 
 void ABulletActor::SetupStaticGeometryPhysics(TArray<AActor*> Actors, float Friction, float Restitution)
@@ -449,7 +450,7 @@ btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, btCollisionShape* Collisi
 
 	auto Origin = GetActorLocation();
 	auto MotionState = new BulletCustomMotionState(Actor, Origin);
-	const btRigidBody::btRigidBodyConstructionInfo rbInfo(Mass*10, MotionState, CollisionShape, Inertia*10);
+	const btRigidBody::btRigidBodyConstructionInfo rbInfo(Mass*10, MotionState, CollisionShape, Inertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
 	body->setUserPointer(Actor);
 	body->setActivationState(DISABLE_DEACTIVATION);
@@ -474,11 +475,6 @@ btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel,FTransform 
 	BtWorld->addRigidBody(body);
 	BtRigidBodies.Add(body);
 	return body;
-}
-
-void ABulletActor::StepPhysics(float deltaSeconds, int substeps)
-{
-	BtWorld->stepSimulation(deltaSeconds, substeps, 1. / 60);
 }
 
 void ABulletActor::SetPhysicsState(int ID, FTransform transforms, FVector Velocity, FVector AngularVelocity, FVector& Force)
@@ -510,6 +506,32 @@ void ABulletActor::GetPhysicsState(int ID, FTransform& transforms, FVector& Velo
 btCollisionObject* ABulletActor::GetStaticObject(int ID)
 {
 	return BtStaticObjects[ID];
+}
+
+void ABulletActor::RayTest(FVector Start, FVector End,std::function<void(const FVector&, const FVector&, const bool&)> HitCallback)
+{// Set up the raycast parameters
+	if (!BtWorld) {
+		UE_LOG(LogTemp, Warning, TEXT("ABulletActor::RayTestSingle: loaded wihout a bullet world't work"));
+		return;
+	} 
+
+	btVector3 fromV = BulletHelpers::ToBtPos(Start, FVector(0));
+	btVector3 toV = BulletHelpers::ToBtPos(End, FVector(0));
+	btCollisionWorld::ClosestRayResultCallback rayCallback(fromV, toV);
+
+	btTransform fromTransform, toTransform;
+
+	BtWorld->rayTest(
+			fromV,
+			toV,
+			rayCallback
+			);
+
+	HitCallback(
+			BulletHelpers::ToUEPos(rayCallback.m_hitPointWorld, FVector(0)),
+			BulletHelpers::ToUEPos(rayCallback.m_hitNormalWorld, FVector(0)),
+			rayCallback.hasHit()
+			);
 }
 
 void ABulletActor::RayTestSingle(FVector Start, FVector End, int CheckObjectID,std::function<void(const FVector&, const FVector&, const bool&)> HitCallback)

@@ -150,6 +150,15 @@ void UBulletSkeletalMeshComponent::BulletSetCenterOfMass(FTransform CentreOfMass
 	BulletOwnerRigidBody->setCenterOfMassTransform(BulletHelpers::ToBt(CentreOfMass,GetComponentLocation()));
 }
 
+void UBulletSkeletalMeshComponent::BulletSetDamping(float LinearDamping, float AngularDamping)
+{
+	if (!BulletOwnerRigidBody){
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletSetDamping: Owning body is null. Unable to set damping"));
+		return;
+	}
+	BulletOwnerRigidBody->setDamping(LinearDamping, AngularDamping);
+}
+
 void UBulletSkeletalMeshComponent::BulletSetWorldTransform(FTransform WorldTransform)
 {
 	if (!BulletOwnerRigidBody){
@@ -168,15 +177,35 @@ float UBulletSkeletalMeshComponent::BulletGetBodyMass()
 	return BulletOwnerRigidBody->getMass();
 }
 
-FVector UBulletSkeletalMeshComponent::BulletGetVelocityAt(FVector Location) 
+FVector UBulletSkeletalMeshComponent::BulletGetVelocityAt(FVector LocationLS) 
 {
 	if (!BulletOwnerRigidBody){
 		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletGetVelocityAt: Owning body is null."));
 		return FVector(0);
 	}
 	return BulletHelpers::ToUEPos(
-			BulletOwnerRigidBody->getVelocityInLocalPoint(BulletHelpers::ToBtPos(Location, GetComponentLocation())),
+			BulletOwnerRigidBody->getVelocityInLocalPoint(BulletHelpers::ToBtPos(LocationLS, FVector(0))),
 			FVector(0));
+}
+
+void UBulletSkeletalMeshComponent::BulletSetMass(float NewMass) 
+{
+	if (!BulletOwnerRigidBody){
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletSetMass: Owning body is null."));
+		return ;
+	}
+	btVector3 inertia(0,0,0);
+	BulletOwnerRigidBody->getCollisionShape()->calculateLocalInertia(NewMass, inertia);
+	BulletOwnerRigidBody->setMassProps(NewMass,inertia);
+}
+
+void UBulletSkeletalMeshComponent::BulletApplyTorqueImpulse(FVector torque) 
+{
+	if (!BulletOwnerRigidBody){
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletApplyTorqueTurnImpulse: Owning body is null."));
+		return ;
+	}
+	BulletOwnerRigidBody->applyTorqueImpulse(BulletHelpers::ToBtDir(torque, true));
 }
 
 void UBulletSkeletalMeshComponent::GetPhysicsState(FTransform& Transform, FVector& Velocity, FVector& AngularVelocity,FVector& Force)
@@ -185,7 +214,7 @@ void UBulletSkeletalMeshComponent::GetPhysicsState(FTransform& Transform, FVecto
 		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::GetPhysicsState: Owning body is null. Unable to fetch physics state"));
 		return;
 	}
-	Transform= BulletHelpers::ToUE( BulletOwnerRigidBody->getWorldTransform(),GetComponentLocation()) ;
+	Transform= BulletHelpers::ToUE( BulletOwnerRigidBody->getWorldTransform(),FVector(0)) ;
 	Velocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getLinearVelocity(), FVector(0));
 	AngularVelocity = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getAngularVelocity(), FVector(0));
 	Force = BulletHelpers::ToUEPos(BulletOwnerRigidBody->getTotalForce(), GetComponentLocation());

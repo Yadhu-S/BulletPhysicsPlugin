@@ -32,6 +32,9 @@ UCLASS()
 			void BulletAddImpulseAtLocation(FVector Impulse, FVector Location);
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
+			void BulletApplyTorqueImpulse(FVector torque);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			void GetPhysicsState(FTransform& Transform, FVector& Velocity, FVector& AngularVelocity,FVector& Force);
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
@@ -59,7 +62,13 @@ UCLASS()
 			float BulletGetBodyMass();
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
-			FVector BulletGetVelocityAt(FVector RelLoc);
+			FVector BulletGetVelocityAt(FVector LocationLS);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
+			void BulletSetDamping(float LinearDamping, float AngularDamping);
+
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
+			void BulletSetMass(float NewMass);
 	private:
 
 		btRigidBody* BulletOwnerRigidBody;

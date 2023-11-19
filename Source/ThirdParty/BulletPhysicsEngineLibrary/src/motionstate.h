@@ -69,11 +69,16 @@ class BULLETPHYSICSENGINE_API BulletUEMotionState: public btMotionState
 		{
 
 		}
-		BulletUEMotionState(USkeletalMeshComponent* ParentActor, const FVector& WorldCentre,const FTransform& localTransform, const btTransform& CenterOfMassOffset = btTransform::getIdentity())
-			: Parent(ParentActor), WorldOrigin(WorldCentre),LocalTransform(localTransform),CenterOfMassTransform(CenterOfMassOffset)
-
-		{
-		}
+		BulletUEMotionState(
+				USkeletalMeshComponent* ParentActor,
+				const FVector& WorldCentre,
+				const FTransform& localTransform,
+				const btTransform& CenterOfMassOffset = btTransform::getIdentity()
+				):
+			Parent(ParentActor),
+			WorldOrigin(WorldCentre),LocalTransform(localTransform),
+			CenterOfMassTransform(CenterOfMassOffset)
+		{}
 
 		///synchronizes world transform from UE to physics (typically only called at start)
 		void getWorldTransform(btTransform& OutCenterOfMassWorldTrans) const override
