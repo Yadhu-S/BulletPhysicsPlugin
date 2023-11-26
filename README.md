@@ -21,15 +21,19 @@ Clone this repo into your `Engine/Plugin` directory, recompile.
 
 #### Manual compilation(bullet 3)
 1. Clone [bullet](https://github.com/bulletphysics/bullet3)
-2. Compile, `cmake \
+2. Compile,
+
+```bash
+cmake \
     -DLIBRARY_OUTPUT_PATH=<PATH TO THIS REPO>/BulletPhysicsPlugin/Source/ThirdParty/BulletPhysicsEngineLibrary/lib/linux/<RelFolder>\
     -DBUILD_SHARED_LIBS=1 \
     -DINSTALL_LIBS=0 \
     -DINSTALL_EXTRA_LIBS=0 \
-    -DCMAKE_BUILD_TYPE=<RelType> \
-    .`
-	Replace build type as required: `Debug`,`RelWithDebugInfo`,`Release`.
-3. `make` , had to use `make -j` because, compile was not using all cores for some reason.
+    -DCMAKE_BUILD_TYPE=<RelType> \ # Replace build type as required: `Debug`,`RelWithDebugInfo`,`Release`.
+    .
+```
+
+3. `make`, had to use `make -j` because, compile was not using all cores for some reason.
 
 
 ### Credits
