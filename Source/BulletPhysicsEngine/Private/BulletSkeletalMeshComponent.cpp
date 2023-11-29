@@ -120,7 +120,7 @@ void UBulletSkeletalMeshComponent::BulletAddImpulseAtLocation(FVector Impulse, F
 		return;
 	}
 
-	BulletOwnerRigidBody->applyImpulse(BulletHelpers::ToBtDir(Impulse, true), BulletHelpers::ToBtPos(Location, GetComponentLocation()));
+	BulletOwnerRigidBody->applyImpulse(BulletHelpers::ToBtDir(Impulse, true), BulletHelpers::ToBtPos(Location, FVector(0)));
 }
 
 FVector UBulletSkeletalMeshComponent::BulletGetCentreOfMass()
