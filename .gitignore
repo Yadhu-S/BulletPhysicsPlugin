@@ -82,7 +82,7 @@ DerivedDataCache/*
 # Mac crap
 .DS_Store
 
-# Un-Ignore All ThirdParty binary/libs etc.
+# Un-Ignore All ThirdParty 
 !Source/ThirdParty/**
 
 # Ignore Export directory
@@ -96,3 +96,6 @@ Export/**
 
 # Unignore .gitignore
 !.gitignore
+
+#ignore linux libs
+Source/ThirdParty/BulletPhysicsEngineLibrary/lib/**
