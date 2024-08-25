@@ -1,5 +1,5 @@
 # BulletPhysicsPlugin for Unreal Engine
-Bullet Physics SDK for Unreal Engine 4.26+
+Bullet Physics SDK for Unreal Engine 
 
 ## Screenshots
 | Physics asset | Editor |
@@ -8,7 +8,8 @@ Bullet Physics SDK for Unreal Engine 4.26+
 
 
 
-## Status
+## Status - Experimental
+Please make your own fork if you decide to use this
 Implementing and adding support for a custom USkeletalMeshComponent. It supports compound shapes.
 *This is a work in progress (very WIP) :), use the originally forked repo mentioned below if you want something usable.*
 
@@ -21,7 +22,8 @@ Clone this repo into your `Plugin` directory of your choice `Engine` or `<Your p
 ### Mac
 Might work, no idea
 
-#### Manual compilation (bullet 3) (SHOULD YOU NEED IT)
+#### Manual compilation (bullet 3) 
+*You don't need to do this. Just putting it here if you need to compile it*
 1. Clone [bullet](https://github.com/bulletphysics/bullet3)
 2. Compile,
 
