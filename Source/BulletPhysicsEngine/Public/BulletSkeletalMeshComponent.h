@@ -20,7 +20,7 @@ UCLASS()
 		UBulletSkeletalMeshComponent();
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
-			void LoadBulletActor(ABulletActor* bulletActor){BulletActor = bulletActor; AddOwnPhysicsAsset();};
+			void LoadBulletActor(UBulletSubsystem* bulletSubsystem){BulletSubSystem = bulletSubsystem; AddOwnPhysicsAsset();};
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			void BulletAddForce(FVector Force, FVector Location);
@@ -73,7 +73,7 @@ UCLASS()
 
 		btRigidBody* BulletOwnerRigidBody;
 
-		ABulletActor* BulletActor;
+		UBulletSubsystem* BulletSubSystem;
 
 		void AddOwnPhysicsAsset();
 	protected:

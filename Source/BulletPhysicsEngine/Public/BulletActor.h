@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "PhysicsEngine/BodySetup.h"
-#include "BulletPhysicsEngineLibrary/BulletMinimal.h"
-#include "BulletPhysicsEngineLibrary/src/bthelper.h"
-#include "BulletPhysicsEngineLibrary/src/motionstate.h"
-#include "BulletPhysicsEngineLibrary/src/BulletMain.h"
-#include "BulletPhysicsEngineLibrary/debug/btdebug.h"
+#include "BulletPhysicsEngine/bthelper.h"
+#include "BulletPhysicsEngine/motionstate.h"
+#include "BulletPhysicsEngine/BulletMain.h"
+#include "BulletPhysicsEngine/btdebug.h"
 #include "Components/ShapeComponent.h"
 #include <functional>
 #include "GameFramework/Actor.h"
+#include "Subsystems/SubsystemCollection.h"
 #include "Templates/Function.h"
 
 #include "BulletActor.generated.h"
@@ -21,14 +21,11 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FRayTestSingleCallback, const FVector&, To,
 
 
 UCLASS()
-	class BULLETPHYSICSENGINE_API ABulletActor : public AActor
+	class BULLETPHYSICSENGINE_API UBulletSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 
 	public:	
-		// Sets default values for this actor's properties
-		ABulletActor();
-
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
 			void AddStaticBody(AActor* player, float Friction, float Restitution,int &ID);
@@ -53,7 +50,6 @@ UCLASS()
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
 			void StepPhysics(float deltaSeconds, int maxSubSteps = 1, float fixedTimeStep = 0.016666667f);
-
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
 			void SetPhysicsState(int ID, FTransform transforms, FVector Velocity, FVector AngularVelocity,FVector& Force);
@@ -90,9 +86,17 @@ UCLASS()
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|RayCast")
 			void RayTestSingle(FVector start, FVector end, int CheckObjectID, const FRayTestSingleCallback HitCallback);
 
+		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Settings")
+			void EnableDebugDrawer();
+
 		void RayTestSingle(FVector Start, FVector End, int CheckObjectID, std::function<void(const FVector&, const FVector&, const bool&)> HitCallback);
 
 		void RayTest(FVector Start, FVector End,std::function<void(const FVector&, const FVector&, const bool&)> HitCallback);
+
+		virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+		virtual void Deinitialize() override;
+
 	private:
 		// Bullet section
 		// Global objects
@@ -154,19 +158,13 @@ UCLASS()
 
 		btCollisionShape* GetConvexHullCollisionShape(UBodySetup* BodySetup, int ConvexIndex, const FVector& Scale);
 
-		btRigidBody* AddRigidBody(AActor* Actor, const ABulletActor::CachedDynamicShapeData& ShapeData, float Friction, float Restitution);
+		btRigidBody* AddRigidBody(AActor* Actor, const UBulletSubsystem::CachedDynamicShapeData& ShapeData, float Friction, float Restitution);
 
 		btRigidBody* AddRigidBody(AActor* Actor, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution);
 
 		btRigidBody* AddRigidBody(USkeletalMeshComponent* skel,FTransform localTransform, btCollisionShape* collisionShape, float Mass, float Friction, float Restitution);
 
 		btCollisionObject* GetStaticObject(int ID);
-
-	protected:
-		// Called when the game starts or when spawned
-		virtual void BeginPlay() override;
-
-		virtual void Tick(float deltaTime) override;
 
 	private:
 		typedef const std::function<void(btCollisionShape* /*SingleShape*/, const FTransform& /*RelativeXform*/)>& PhysicsGeometryCallback;
@@ -183,6 +181,6 @@ UCLASS()
 
 		void ExtractPhysicsGeometry(const FTransform& XformSoFar, UBodySetup* BodySetup, PhysicsGeometryCallback CB);
 
-		const ABulletActor::CachedDynamicShapeData& GetCachedDynamicShapeData(AActor* Actor, float Mass);
+		const UBulletSubsystem::CachedDynamicShapeData& GetCachedDynamicShapeData(AActor* Actor, float Mass);
 
 };

@@ -32,7 +32,7 @@ void UBulletSkeletalMeshComponent::BeginPlay()
 
 void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 {
-	if (BulletActor==nullptr) {
+	if (BulletSubSystem==nullptr) {
 		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: loaded wihout a global bulletActor, physics won't work"));
 		return;
 	}
@@ -56,7 +56,7 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 
 		for (FKBoxElem box : bodySetup->AggGeom.BoxElems){
 			FVector dimensions = FVector(box.X, box.Y, box.Z) * box.GetTransform().GetScale3D();
-			shape = BulletActor -> GetBoxCollisionShape(dimensions);
+			shape = BulletSubSystem -> GetBoxCollisionShape(dimensions);
 			if (compoundShape) {
 				compoundShape->addChildShape(BulletHelpers::ToBt(box.GetTransform(),GetComponentLocation()), shape);
 				continue;
@@ -70,7 +70,7 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 			// Capsules are in Z in UE, in Y in Bullet, so roll -90
 			FTransform shapeXform(capsule.Rotation + FRotator(0, 0, -90), capsule.Center);
 			capsule.SetTransform(shapeXform);
-			shape =BulletActor->GetCapsuleCollisionShape(capsule.Radius * scale.X, capsule.Length * scale.Z);
+			shape =BulletSubSystem->GetCapsuleCollisionShape(capsule.Radius * scale.X, capsule.Length * scale.Z);
 			if (compoundShape) {
 				compoundShape->addChildShape(BulletHelpers::ToBt(capsule.GetTransform(),GetComponentLocation()), shape);
 				continue;
@@ -81,7 +81,7 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 
 		for (FKSphereElem sphere : bodySetup->AggGeom.SphereElems){
 			FVector scale = sphere.GetTransform().GetScale3D();
-			shape = BulletActor->GetSphereCollisionShape(sphere.Radius * scale.X) ;
+			shape = BulletSubSystem->GetSphereCollisionShape(sphere.Radius * scale.X) ;
 			if (compoundShape) {
 				compoundShape->addChildShape(BulletHelpers::ToBt(sphere.GetTransform(),GetComponentLocation()), shape);
 				continue;
@@ -92,7 +92,7 @@ void UBulletSkeletalMeshComponent::AddOwnPhysicsAsset()
 		if (compoundShape) {
 			shape = compoundShape;
 		}
-		BulletOwnerRigidBody = BulletActor->AddRigidBody(this, physicsAssetLocalTransform, shape, Mass, Friction, Restitution);
+		BulletOwnerRigidBody = BulletSubSystem->AddRigidBody(this, physicsAssetLocalTransform, shape, Mass, Friction, Restitution);
 		UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::AddOwnPhysicsAsset: done setting up own rigid body"));
 	}
 }

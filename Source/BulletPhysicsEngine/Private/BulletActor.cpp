@@ -2,15 +2,13 @@
 
 
 #include "BulletActor.h"
-#include "LinearMath/btDefaultMotionState.h"
-#include "motionstate.h"
 
 
-// Sets default values
-ABulletActor::ABulletActor()
-{
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+const FVector UE_WORLD_ORIGIN = FVector(0);
+
+
+void UBulletSubsystem::Initialize(FSubsystemCollectionBase& Collection){
+
 
 	PhysicsDeltaTime = 1/PhysicsRefreshRate;
 
@@ -26,33 +24,30 @@ ABulletActor::ABulletActor()
 	BtWorld = new btDiscreteDynamicsWorld(BtCollisionDispatcher, BtBroadphase, BtConstraintSolver, BtCollisionConfig);
 	BtWorld->setGravity(btVector3(Gravity.X,Gravity.Y, Gravity.Z));
 
-}
-
-// Called when the game starts or when spawned
-void ABulletActor::BeginPlay()
-{
-	Super::BeginPlay();
+	UE_LOG(LogTemp, Warning, TEXT("UBulletSubsystem:: Bullet world init"));
 
 	if (GetWorld() == nullptr) {
-		UE_LOG(LogTemp, Warning, TEXT("ABulletActor::GetWorld() returned null"));
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSubsystem::GetWorld() returned null"));
 		return;
+	}else {
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSubsystem::GOT WORLD...Yay!!"));
 	}
 
-#if WITH_EDITOR
-	if (DebugEnabled) {
-		BtDebugDraw = new BulletDebugDraw(GetWorld(), GetActorLocation());
-		BtWorld->setDebugDrawer(BtDebugDraw);
-	}
-#endif
 }
 
-void ABulletActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	RandVar = mt->getRandSeed();
+
+void UBulletSubsystem::Deinitialize() {
+
 }
 
-void ABulletActor::StepPhysics(float deltaSeconds, int maxSubSteps, float fixedTimeStep)
+
+void UBulletSubsystem::EnableDebugDrawer(){
+	BtDebugDraw = new BulletDebugDraw(GetWorld(), UE_WORLD_ORIGIN);
+	BtWorld->setDebugDrawer(BtDebugDraw);
+}
+
+
+void UBulletSubsystem::StepPhysics(float deltaSeconds, int maxSubSteps, float fixedTimeStep)
 {
 	BtWorld->stepSimulation(deltaSeconds,maxSubSteps,fixedTimeStep);
 
@@ -63,7 +58,7 @@ void ABulletActor::StepPhysics(float deltaSeconds, int maxSubSteps, float fixedT
 #endif
 }
 
-void ABulletActor::SetupStaticGeometryPhysics(TArray<AActor*> Actors, float Friction, float Restitution)
+void UBulletSubsystem::SetupStaticGeometryPhysics(TArray<AActor*> Actors, float Friction, float Restitution)
 {
 	for (AActor* Actor : Actors)
 	{
@@ -79,7 +74,7 @@ void ABulletActor::SetupStaticGeometryPhysics(TArray<AActor*> Actors, float Fric
 }
 
 
-void ABulletActor::AddStaticBody(AActor* Body, float Friction, float Restitution,int &ID)
+void UBulletSubsystem::AddStaticBody(AActor* Body, float Friction, float Restitution,int &ID)
 {
 
 	ExtractPhysicsGeometry(Body,[Body, this, Friction, Restitution](btCollisionShape* Shape, const FTransform& RelTransform)
@@ -93,7 +88,7 @@ void ABulletActor::AddStaticBody(AActor* Body, float Friction, float Restitution
 }
 
 
-void ABulletActor::AddProcBody(AActor* Body,  float Friction, TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d, float Restitution, int& ID)
+void UBulletSubsystem::AddProcBody(AActor* Body,  float Friction, TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d, float Restitution, int& ID)
 {
 	btCollisionShape* Shape = GetTriangleMeshShape(a,b,c,d);
 	const FTransform FinalXform = Body->GetActorTransform();
@@ -102,7 +97,7 @@ void ABulletActor::AddProcBody(AActor* Body,  float Friction, TArray<FVector> a,
 }
 
 
-void ABulletActor::UpdateProcBody(AActor* Body, float Friction, TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d, float Restitution, int& ID, int PrevID)
+void UBulletSubsystem::UpdateProcBody(AActor* Body, float Friction, TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d, float Restitution, int& ID, int PrevID)
 {
 	BtWorld->removeCollisionObject(procbody);
 	procbody = nullptr;
@@ -116,7 +111,7 @@ void ABulletActor::UpdateProcBody(AActor* Body, float Friction, TArray<FVector> 
 
 
 
-void ABulletActor::AddRigidBody(AActor* Body, float Friction, float Restitution, int& ID,float mass)
+void UBulletSubsystem::AddRigidBody(AActor* Body, float Friction, float Restitution, int& ID,float mass)
 {
 	AddRigidBody(Body, GetCachedDynamicShapeData(Body, mass), Friction, Restitution);
 	ID = BtRigidBodies.Num() - 1;
@@ -124,32 +119,32 @@ void ABulletActor::AddRigidBody(AActor* Body, float Friction, float Restitution,
 
 
 
-void ABulletActor::UpdatePlayertransform(AActor* player, int ID)
+void UBulletSubsystem::UpdatePlayertransform(AActor* player, int ID)
 {
 
-	BtWorld->getCollisionObjectArray()[ID]->setWorldTransform(BulletHelpers::ToBt(player->GetActorTransform(), GetActorLocation()));
+	BtWorld->getCollisionObjectArray()[ID]->setWorldTransform(BulletHelpers::ToBt(player->GetActorTransform(), UE_WORLD_ORIGIN));
 }
 
 
-void ABulletActor::AddImpulse( int ID, FVector Impulse, FVector Location)
+void UBulletSubsystem::AddImpulse( int ID, FVector Impulse, FVector Location)
 {
-	BtRigidBodies[ID]->applyImpulse(BulletHelpers::ToBtDir(Impulse, true), BulletHelpers::ToBtPos(Location, GetActorLocation()));
+	BtRigidBodies[ID]->applyImpulse(BulletHelpers::ToBtDir(Impulse, true), BulletHelpers::ToBtPos(Location, UE_WORLD_ORIGIN));
 }
 
-void ABulletActor::AddForce( int id, FVector force, FVector location)
+void UBulletSubsystem::AddForce( int id, FVector force, FVector location)
 {
-	BtRigidBodies[id]->applyForce(BulletHelpers::ToBtDir(force, true), BulletHelpers::ToBtPos(location, GetActorLocation()));
+	BtRigidBodies[id]->applyForce(BulletHelpers::ToBtDir(force, true), BulletHelpers::ToBtPos(location, UE_WORLD_ORIGIN));
 }
 
 
-btCollisionObject* ABulletActor::AddStaticCollision(btCollisionShape* Shape, const FTransform& Transform, float Friction,
+btCollisionObject* UBulletSubsystem::AddStaticCollision(btCollisionShape* Shape, const FTransform& Transform, float Friction,
 		float Restitution, AActor* Actor)
 {
 	if (!BtWorld){
-		UE_LOG(LogTemp, Warning, TEXT("ABulletActor::AddStaticCollision: BtWorld is empty"));
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSubsystem::AddStaticCollision: BtWorld is empty"));
 		return nullptr;
 	}
-	btTransform Xform = BulletHelpers::ToBt(Transform, GetActorLocation());
+	btTransform Xform = BulletHelpers::ToBt(Transform, UE_WORLD_ORIGIN);
 	btCollisionObject* Obj = new btCollisionObject();
 	Obj->setCollisionShape(Shape);
 	Obj->setWorldTransform(Xform);
@@ -163,7 +158,7 @@ btCollisionObject* ABulletActor::AddStaticCollision(btCollisionShape* Shape, con
 }
 
 
-void ABulletActor::ExtractPhysicsGeometry(AActor* Actor, PhysicsGeometryCallback CB)
+void UBulletSubsystem::ExtractPhysicsGeometry(AActor* Actor, PhysicsGeometryCallback CB)
 {
 	TInlineComponentArray<UActorComponent*, 20> Components;
 	// Used to easily get a component's transform relative to actor, not parent component
@@ -187,7 +182,7 @@ void ABulletActor::ExtractPhysicsGeometry(AActor* Actor, PhysicsGeometryCallback
 
 
 
-void ABulletActor::ExtractPhysicsGeometry(UStaticMeshComponent* SMC, const FTransform& InvActorXform, PhysicsGeometryCallback CB)
+void UBulletSubsystem::ExtractPhysicsGeometry(UStaticMeshComponent* SMC, const FTransform& InvActorXform, PhysicsGeometryCallback CB)
 {
 	UStaticMesh* Mesh = SMC->GetStaticMesh();
 	if (!Mesh)
@@ -207,7 +202,7 @@ void ABulletActor::ExtractPhysicsGeometry(UStaticMeshComponent* SMC, const FTran
 }
 
 
-void ABulletActor::ExtractPhysicsGeometry(UShapeComponent* Sc, const FTransform& InvActorXform, PhysicsGeometryCallback CB)
+void UBulletSubsystem::ExtractPhysicsGeometry(UShapeComponent* Sc, const FTransform& InvActorXform, PhysicsGeometryCallback CB)
 {
 	// We want the complete transform from actor to this component, not just relative to parent
 	FTransform CompFullRelXForm = Sc->GetComponentTransform() * InvActorXform;
@@ -215,7 +210,7 @@ void ABulletActor::ExtractPhysicsGeometry(UShapeComponent* Sc, const FTransform&
 }
 
 
-void ABulletActor::ExtractPhysicsGeometry(const FTransform& XformSoFar, UBodySetup* BodySetup, PhysicsGeometryCallback CB)
+void UBulletSubsystem::ExtractPhysicsGeometry(const FTransform& XformSoFar, UBodySetup* BodySetup, PhysicsGeometryCallback CB)
 {
 	FVector Scale = XformSoFar.GetScale3D();
 	btCollisionShape* Shape = nullptr;
@@ -263,7 +258,7 @@ void ABulletActor::ExtractPhysicsGeometry(const FTransform& XformSoFar, UBodySet
 
 }
 
-btCollisionShape* ABulletActor::GetBoxCollisionShape(const FVector& Dimensions)
+btCollisionShape* UBulletSubsystem::GetBoxCollisionShape(const FVector& Dimensions)
 {
 	// Simple brute force lookup for now, probably doesn't need anything more clever
 	btVector3 HalfSize = BulletHelpers::ToBtSize(Dimensions * 0.5);
@@ -288,7 +283,7 @@ btCollisionShape* ABulletActor::GetBoxCollisionShape(const FVector& Dimensions)
 
 }
 
-btCollisionShape* ABulletActor::GetSphereCollisionShape(float Radius)
+btCollisionShape* UBulletSubsystem::GetSphereCollisionShape(float Radius)
 {
 	// Simple brute force lookup for now, probably doesn't need anything more clever
 	btScalar Rad = BulletHelpers::ToBtSize(Radius);
@@ -311,7 +306,7 @@ btCollisionShape* ABulletActor::GetSphereCollisionShape(float Radius)
 
 }
 
-btCollisionShape* ABulletActor::GetCapsuleCollisionShape(float Radius, float Height)
+btCollisionShape* UBulletSubsystem::GetCapsuleCollisionShape(float Radius, float Height)
 {
 	// Simple brute force lookup for now, probably doesn't need anything more clever
 	btScalar R = BulletHelpers::ToBtSize(Radius);
@@ -336,7 +331,7 @@ btCollisionShape* ABulletActor::GetCapsuleCollisionShape(float Radius, float Hei
 
 }
 
-btCollisionShape* ABulletActor::GetTriangleMeshShape(TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d)
+btCollisionShape* UBulletSubsystem::GetTriangleMeshShape(TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d)
 {
 	btTriangleMesh* triangleMesh = new btTriangleMesh();
 
@@ -350,7 +345,7 @@ btCollisionShape* ABulletActor::GetTriangleMeshShape(TArray<FVector> a, TArray<F
 	return Trimesh;
 }
 
-btCollisionShape* ABulletActor::GetConvexHullCollisionShape(UBodySetup* BodySetup, int ConvexIndex, const FVector& Scale)
+btCollisionShape* UBulletSubsystem::GetConvexHullCollisionShape(UBodySetup* BodySetup, int ConvexIndex, const FVector& Scale)
 {
 	for (auto&& S : BtConvexHullCollisionShapes)
 	{ 
@@ -384,7 +379,7 @@ btCollisionShape* ABulletActor::GetConvexHullCollisionShape(UBodySetup* BodySetu
 
 
 
-const ABulletActor::CachedDynamicShapeData& ABulletActor::GetCachedDynamicShapeData(AActor* Actor, float Mass)
+const UBulletSubsystem::CachedDynamicShapeData& UBulletSubsystem::GetCachedDynamicShapeData(AActor* Actor, float Mass)
 {
 	// We re-use compound shapes based on (leaf) BP class
 	const FName ClassName = Actor->GetClass()->GetFName();
@@ -440,17 +435,16 @@ const ABulletActor::CachedDynamicShapeData& ABulletActor::GetCachedDynamicShapeD
 
 }
 
-btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, const ABulletActor::CachedDynamicShapeData& ShapeData, float Friction, float Restitution)
+btRigidBody* UBulletSubsystem::AddRigidBody(AActor* Actor, const UBulletSubsystem::CachedDynamicShapeData& ShapeData, float Friction, float Restitution)
 {
 	return AddRigidBody(Actor, ShapeData.Shape, ShapeData.Inertia, ShapeData.Mass, Friction, Restitution);
 }
 
-btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution)
+btRigidBody* UBulletSubsystem::AddRigidBody(AActor* Actor, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution)
 {
 
-	auto Origin = GetActorLocation();
-	auto MotionState = new BulletCustomMotionState(Actor, Origin);
-	const btRigidBody::btRigidBodyConstructionInfo rbInfo(Mass*10, MotionState, CollisionShape, Inertia);
+	auto MotionState = new BulletCustomMotionState(Actor, UE_WORLD_ORIGIN);
+	const btRigidBody::btRigidBodyConstructionInfo rbInfo(Mass, MotionState, CollisionShape, Inertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
 	body->setUserPointer(Actor);
 	body->setActivationState(DISABLE_DEACTIVATION);
@@ -460,7 +454,7 @@ btRigidBody* ABulletActor::AddRigidBody(AActor* Actor, btCollisionShape* Collisi
 	return body;
 }
 
-btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel,FTransform PhysicsAssetTransform, btCollisionShape* collisionShape, float mass, float friction, float restitution)
+btRigidBody* UBulletSubsystem::AddRigidBody(USkeletalMeshComponent* skel,FTransform PhysicsAssetTransform, btCollisionShape* collisionShape, float mass, float friction, float restitution)
 {
 	FVector origin = skel->GetOwner()->GetActorLocation();
 	btVector3 inertia(0,0,0);
@@ -468,7 +462,7 @@ btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel,FTransform 
 	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, origin, PhysicsAssetTransform);
 	const btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, objMotionState, collisionShape, inertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
-	body->setUserPointer(GetOwner());
+	body->setUserPointer(skel->GetOwner());
 	body->setActivationState(DISABLE_DEACTIVATION);
 	body->setDeactivationTime(0);
 
@@ -477,41 +471,41 @@ btRigidBody* ABulletActor::AddRigidBody(USkeletalMeshComponent* skel,FTransform 
 	return body;
 }
 
-void ABulletActor::SetPhysicsState(int ID, FTransform transforms, FVector Velocity, FVector AngularVelocity, FVector& Force)
+void UBulletSubsystem::SetPhysicsState(int ID, FTransform transforms, FVector Velocity, FVector AngularVelocity, FVector& Force)
 {
 
 	if (BtRigidBodies[ID]) {
-		BtRigidBodies[ID]->setWorldTransform(BulletHelpers::ToBt(transforms, GetActorLocation()));
-		BtRigidBodies[ID]->setLinearVelocity(BulletHelpers::ToBtPos(Velocity, GetActorLocation()));
+		BtRigidBodies[ID]->setWorldTransform(BulletHelpers::ToBt(transforms, UE_WORLD_ORIGIN));
+		BtRigidBodies[ID]->setLinearVelocity(BulletHelpers::ToBtPos(Velocity, UE_WORLD_ORIGIN));
 		BtRigidBodies[ID]->setAngularVelocity(BulletHelpers::ToBtPos(AngularVelocity, FVector(0)));
 	}
 
 
 }
 
-void ABulletActor::GetPhysicsState(int ID, FTransform& transforms, FVector& Velocity, FVector& AngularVelocity,FVector& Force)
+void UBulletSubsystem::GetPhysicsState(int ID, FTransform& transforms, FVector& Velocity, FVector& AngularVelocity,FVector& Force)
 {
 	if (BtRigidBodies.Num()<=ID) {
 		UE_LOG(LogTemp, Warning, TEXT("No rigid "));
 		return;
 	}
 	if (BtRigidBodies[ID]) {
-		transforms= BulletHelpers::ToUE( BtRigidBodies[ID]->getWorldTransform(),GetActorLocation()) ;
-		Velocity = BulletHelpers::ToUEPos(BtRigidBodies[ID]->getLinearVelocity(), GetActorLocation());
+		transforms= BulletHelpers::ToUE( BtRigidBodies[ID]->getWorldTransform(),UE_WORLD_ORIGIN) ;
+		Velocity = BulletHelpers::ToUEPos(BtRigidBodies[ID]->getLinearVelocity(), UE_WORLD_ORIGIN);
 		AngularVelocity = BulletHelpers::ToUEPos(BtRigidBodies[ID]->getAngularVelocity(), FVector(0));
-		Force = BulletHelpers::ToUEPos(BtRigidBodies[ID]->getTotalForce(), GetActorLocation());
+		Force = BulletHelpers::ToUEPos(BtRigidBodies[ID]->getTotalForce(), UE_WORLD_ORIGIN);
 	}
 }
 
-btCollisionObject* ABulletActor::GetStaticObject(int ID)
+btCollisionObject* UBulletSubsystem::GetStaticObject(int ID)
 {
 	return BtStaticObjects[ID];
 }
 
-void ABulletActor::RayTest(FVector Start, FVector End,std::function<void(const FVector&, const FVector&, const bool&)> HitCallback)
+void UBulletSubsystem::RayTest(FVector Start, FVector End,std::function<void(const FVector&, const FVector&, const bool&)> HitCallback)
 {// Set up the raycast parameters
 	if (!BtWorld) {
-		UE_LOG(LogTemp, Warning, TEXT("ABulletActor::RayTestSingle: loaded wihout a bullet world't work"));
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSubsystem::RayTestSingle: loaded wihout a bullet world't work"));
 		return;
 	} 
 
@@ -534,10 +528,10 @@ void ABulletActor::RayTest(FVector Start, FVector End,std::function<void(const F
 			);
 }
 
-void ABulletActor::RayTestSingle(FVector Start, FVector End, int CheckObjectID,std::function<void(const FVector&, const FVector&, const bool&)> HitCallback)
+void UBulletSubsystem::RayTestSingle(FVector Start, FVector End, int CheckObjectID,std::function<void(const FVector&, const FVector&, const bool&)> HitCallback)
 {// Set up the raycast parameters
 	if (!BtWorld) {
-		UE_LOG(LogTemp, Warning, TEXT("ABulletActor::RayTestSingle: loaded wihout a bullet world't work"));
+		UE_LOG(LogTemp, Warning, TEXT("UBulletSubsystem::RayTestSingle: loaded wihout a bullet world't work"));
 		return;
 	} 
 
@@ -569,7 +563,7 @@ void ABulletActor::RayTestSingle(FVector Start, FVector End, int CheckObjectID,s
 }
 
 
-void ABulletActor::RayTestSingle(FVector start, FVector end, int CheckObjectID, const FRayTestSingleCallback HitCallback)
+void UBulletSubsystem::RayTestSingle(FVector start, FVector end, int CheckObjectID, const FRayTestSingleCallback HitCallback)
 {
 	auto rCallBack = [HitCallback](const FVector& HitLoc, const FVector& HitNormal, const bool& HasHit)
 	{
@@ -580,7 +574,7 @@ void ABulletActor::RayTestSingle(FVector start, FVector end, int CheckObjectID, 
 }
 
 
-void ABulletActor::ResetSim()
+void UBulletSubsystem::ResetSim()
 {
 
 	for (int i = 0; i < BtRigidBodies.Num(); i++)

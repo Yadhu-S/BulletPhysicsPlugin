@@ -13,13 +13,15 @@ Implementing and adding support for a custom USkeletalMeshComponent. It supports
 *This is a work in progress (very WIP) :), use the originally forked repo mentioned below if you want something usable.*
 
 ### Windows
-Clone this repo into your `Engine/Plugin` directory, recompile.
+Clone this repo into your `Plugin` directory of your choice `Engine` or `<Your project Dir>`.
 
 ### Linux
-Clone this repo into your `Engine/Plugin` directory, recompile.
-*Note: Debugging does not work. Also, libs are not provided, you need to compile it youself as mentioned below*
+Clone this repo into your `Plugin` directory of your choice `Engine` or `<Your project Dir>`.
 
-#### Manual compilation(bullet 3)
+### Mac
+Might work, no idea
+
+#### Manual compilation (bullet 3) (SHOULD YOU NEED IT)
 1. Clone [bullet](https://github.com/bulletphysics/bullet3)
 2. Compile,
 
