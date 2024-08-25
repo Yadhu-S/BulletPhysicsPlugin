@@ -9,11 +9,13 @@ Bullet Physics SDK for Unreal Engine
 
 
 ## Status Experimental
-#Please make your own fork if you decide to use this.
+#### Please make your own fork if you decide to use this.
 
 Implementing and adding support for a custom USkeletalMeshComponent. It supports compound shapes.
 
 *This is a work in progress (very WIP) :), use the originally forked repo mentioned below if you want something usable.*
+
+## How to use
 
 ### Windows
 Clone this repo into your `Plugin` directory of your choice `Engine` or `<Your project Dir>`.
