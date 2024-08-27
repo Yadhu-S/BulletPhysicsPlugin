@@ -14,7 +14,7 @@
 #include "Subsystems/SubsystemCollection.h"
 #include "Templates/Function.h"
 
-#include "BulletActor.generated.h"
+#include "BulletSubsystem.generated.h"
 
 
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FRayTestSingleCallback, const FVector&, To, const FVector&, From, bool&, HasHit);

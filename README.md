@@ -18,10 +18,10 @@ Implementing and adding support for a custom USkeletalMeshComponent. It supports
 ## How to use
 
 ### Windows
-Clone this repo into your `Plugin` directory of your choice `Engine` or `<Your project Dir>`.
+Clone this repo into a `Plugin` directory of your choice, `Engine` or `<Your project Dir>`.
 
 ### Linux
-Clone this repo into your `Plugin` directory of your choice `Engine` or `<Your project Dir>`.
+Clone this repo into a `Plugin` directory of your choice, `Engine` or `<Your project Dir>`.
 
 ### Mac
 Might work, no idea

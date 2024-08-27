@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "BulletActor.h"
+#include "BulletSubsystem.h"
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "Delegates/DelegateCombinations.h"
 
@@ -23,7 +23,7 @@ UCLASS()
 			void LoadBulletActor(UBulletSubsystem* bulletSubsystem){BulletSubSystem = bulletSubsystem; AddOwnPhysicsAsset();};
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
-			void BulletAddForce(FVector Force, FVector Location);
+			void BulletAddForceAtLocation(FVector Force, FVector Location);
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			void BulletAddCentralImpulse(FVector Impulse);

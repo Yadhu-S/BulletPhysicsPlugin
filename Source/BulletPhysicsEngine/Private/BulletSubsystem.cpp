@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BulletActor.h"
+#include "BulletSubsystem.h"
 
 
 const FVector UE_WORLD_ORIGIN = FVector(0);
@@ -29,15 +29,13 @@ void UBulletSubsystem::Initialize(FSubsystemCollectionBase& Collection){
 	if (GetWorld() == nullptr) {
 		UE_LOG(LogTemp, Warning, TEXT("UBulletSubsystem::GetWorld() returned null"));
 		return;
-	}else {
-		UE_LOG(LogTemp, Warning, TEXT("UBulletSubsystem::GOT WORLD...Yay!!"));
 	}
 
 }
 
 
 void UBulletSubsystem::Deinitialize() {
-
+	
 }
 
 
@@ -218,10 +216,18 @@ void UBulletSubsystem::ExtractPhysicsGeometry(const FTransform& XformSoFar, UBod
 	// Iterate over the simple collision shapes
 	for (auto&& Box : BodySetup->AggGeom.BoxElems)
 	{
-		// We'll re-use based on just the LxWxH, including actor scale
-		// Rotation and centre will be baked in world space
 		FVector Dimensions = FVector(Box.X, Box.Y, Box.Z) * Scale;
-		Shape = GetBoxCollisionShape(Dimensions);
+		//TODO: find a better way to represent planes in unreal maybe?
+		if (Scale.Z==0) {
+			btVector3 planeNormal(0,0,1);
+			Shape = new btStaticPlaneShape(planeNormal, 0);	
+			UE_LOG(LogTemp, Warning, TEXT("UBulletSubsystem:: creating plane"));
+		}else { 
+			// We'll re-use based on just the LxWxH, including actor scale
+			// Rotation and centre will be baked in world space
+			UE_LOG(LogTemp, Warning, TEXT("UBulletSubsystem:: creating box"));
+			Shape = GetBoxCollisionShape(Dimensions);
+		}
 		FTransform ShapeXform(Box.Rotation, Box.Center);
 		// Shape transform adds to any relative transform already here
 		FTransform XForm = ShapeXform * XformSoFar;
@@ -459,7 +465,7 @@ btRigidBody* UBulletSubsystem::AddRigidBody(USkeletalMeshComponent* skel,FTransf
 	FVector origin = skel->GetOwner()->GetActorLocation();
 	btVector3 inertia(0,0,0);
 	collisionShape->calculateLocalInertia(mass, inertia);
-	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, origin, PhysicsAssetTransform);
+	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, UE_WORLD_ORIGIN, PhysicsAssetTransform);
 	const btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, objMotionState, collisionShape, inertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
 	body->setUserPointer(skel->GetOwner());
@@ -584,6 +590,8 @@ void UBulletSubsystem::ResetSim()
 		BtRigidBodies[i]->setDeactivationTime(0);
 		BtRigidBodies[i]->clearForces();
 	}
+
+	delete BtWorld;
 
 	BtWorld = new btDiscreteDynamicsWorld(BtCollisionDispatcher, BtBroadphase, BtConstraintSolver, BtCollisionConfig);
 	BtWorld->setGravity(btVector3(Gravity.X,Gravity.Y, Gravity.Z));

@@ -104,13 +104,13 @@ bool UBulletSkeletalMeshComponent::BulletIsReady(){
 	return true;
 }
 
-void UBulletSkeletalMeshComponent::BulletAddForce(FVector Force, FVector Location)
+void UBulletSkeletalMeshComponent::BulletAddForceAtLocation(FVector Force, FVector Location)
 {
 	if (!BulletOwnerRigidBody){
 		UE_LOG(LogTemp, Warning, TEXT("UBulletSkeletalMeshComponent::BulletAddForce: Owning body is null. Unable to add force"));
 		return;
 	}
-	BulletOwnerRigidBody->applyForce(BulletHelpers::ToBtDir(Force, true), BulletHelpers::ToBtPos(Location, GetComponentLocation()));
+	BulletOwnerRigidBody->applyForce(BulletHelpers::ToBtDir(Force, true), BulletHelpers::ToBtPos(Location, FVector(0)));
 }
 
 void UBulletSkeletalMeshComponent::BulletAddImpulseAtLocation(FVector Impulse, FVector Location)
