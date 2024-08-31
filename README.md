@@ -2,12 +2,12 @@
 Bullet Physics SDK for Unreal Engine 
 
 ## Screenshots
-![alt text](https://github.com/Yadhu-S/BulletPhysicsPlugin/blob/dev/screenshots/UE_physics_view.png?raw=true) 
-![alt text](https://github.com/Yadhu-S/BulletPhysicsPlugin/blob/dev/screenshots/UE_viewport.png?raw=true) 
+![alt text](https://github.com/Yadhu-S/BulletPhysicsPlugin/blob/68dad0b375008f17c003d37499c1398a1eaa7626/screenshots/UE_viewport.png) 
+![alt text](https://github.com/Yadhu-S/BulletPhysicsPlugin/blob/2022f246308845c2990ac2539dfe36abaa5adea7/screenshots/UE_physics_view.png) 
 
 
 
-## Status Experimental
+## Status Experimental, but somewhat useable.
 #### Please make your own fork if you decide to use this.
 
 Implementing and adding support for a custom USkeletalMeshComponent. It supports compound shapes.
