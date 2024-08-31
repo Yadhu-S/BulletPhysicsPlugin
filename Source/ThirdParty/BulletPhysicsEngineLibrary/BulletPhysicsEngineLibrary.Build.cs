@@ -23,13 +23,11 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 
 		System.Console.WriteLine("Bullet thirdparty directory: " + ThirdPartyBulletPath);
 
-		//-- Generation step
 		var cmakeOptions = "";
-
-
-		cmakeOptions += " -DDOUBLE_PRECISION=1 "; 
-		cmakeOptions += " -DCMAKE_POSITION_INDEPENDENT_CODE=1 "; 
-		cmakeOptions += " -DBUILD_SHARED_LIBS=0 "; 
+		cmakeOptions += " -DUSE_DOUBLE_PRECISION=1 "; 
+		//Don't forget to take out the definition
+		// #define BT_USE_DOUBLE_PRECISION in BulletMain.h if you disable DOUBLE_PRECISION
+		// TODO: Too lazy to add it as a definition here.
 		cmakeOptions += " -DINSTALL_LIBS=0 "; 
 		cmakeOptions += " -DINSTALL_EXTRA_LIBS=0 "; 
 		cmakeOptions += " -DLIBRARY_OUTPUT_PATH="+LibOutputPath; 
@@ -37,9 +35,8 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			// This is needed to make sure the library generated is not a Static Library MT (but it's 'MD')
-			// making it compatible with Unreal.
-			cmakeOptions += " -DUSE_STATIC_MSVC_RUNTIME_LIBRARY=0";
+			cmakeOptions += " -DUSE_MSVC_RUNTIME_LIBRARY_DLL=1";
+			cmakeOptions += " -DUSE_MSVC_RELEASE_RUNTIME_ALWAYS=1";
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
@@ -47,6 +44,8 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
+			cmakeOptions += " -DCMAKE_POSITION_INDEPENDENT_CODE=1 ";
+			cmakeOptions += " -DBUILD_SHARED_LIBS=0 "; 
 			cmakeOptions += " -DCMAKE_CXX_COMPILER=/usr/bin/clang++ "; 
 			cmakeOptions += " -DCMAKE_C_COMPILER=/usr/bin/clang "; 
 
@@ -68,10 +67,17 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 			System.Console.WriteLine("Bullet lib configure CMake project failed with code: " + configureCode);
 			return false;
 		}
-		// Compilation step
+
 		var buildCommand = "";
 		buildCommand += BuildUtils.GetCMakeExe() + " ";
 		buildCommand += " --build " + BulletBuildDir + " ";
+		buildCommand += " --target ";
+		string[] libraryNames = { "BulletCollision", "BulletDynamics", "LinearMath" };
+		foreach (string libraryName in libraryNames)
+		{
+			buildCommand += "" + libraryName + " ";
+		}
+
 		buildCommand += " -j " + System.Environment.ProcessorCount + " ";
 
 
@@ -95,8 +101,8 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 		bool bDebug = Target.Configuration == UnrealTargetConfiguration.Debug || Target.Configuration == UnrealTargetConfiguration.DebugGame;
 		bool bDevelopment = Target.Configuration == UnrealTargetConfiguration.Development;
 
-		string BuildFolder;
-		string BuildSuffix;
+		string BuildFolder="";
+		string BuildSuffix="";
 
 		if (bDebug)
 		{
@@ -106,9 +112,15 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 		}
 		else if (bDevelopment)
 		{
-			BuildFolder = "RelWithDebugInfo";
-			BuildSuffix = "_RelWithDebugInfo";
+			BuildSuffix = "_RelWithDebInfo";
+			BuildFolder = "RelWithDebInfo";
 			BuildBullet("Development");
+			if (Target.Platform == UnrealTargetPlatform.Win64)
+			{
+				//FIXME: I don't know, maybe...
+				BuildFolder = Path.Combine("RelWithDebInfo","Debug");
+				BuildSuffix = "_Debug";
+			}
 		}
 		else
 		{
@@ -117,9 +129,9 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 			BuildBullet("Release");
 		}
 
-		string BuildPlatForm = "win64";
+		string BuildPlatForm = "Win64";
 		string LibExtension = ".lib";
-		string BuildPrefix="";
+		string BuildPrefix = "";
 
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
@@ -130,7 +142,7 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 		}
 
 		// Library path
-		string LibrariesPath = Path.Combine( ModuleDirectory, "lib", BuildPlatForm, BuildFolder);
+		string LibrariesPath = Path.Combine(ModuleDirectory, "lib", BuildPlatForm, BuildFolder);
 
 		string[] libraryNames = { "BulletCollision", "BulletDynamics", "LinearMath" };
 
@@ -140,7 +152,7 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 		}
 
 		// Include path (I'm just using the source here since Bullet has mixed src & headers)
-		PublicIncludePaths.Add( Path.Combine( ModuleDirectory, "bullet3/src" ) );
+		PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "bullet3/src"));
 		PublicDefinitions.Add("WITH_BULLET_BINDING=1");
 
 	}
@@ -148,66 +160,68 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 
 
 // from UE4CMAKE:  https://github.com/caseymcc/UE4CMake/blob/main/Source/CMakeTarget.Build.cs
-public class BuildUtils {
+public class BuildUtils
+{
 	public static Tuple<string, string> GetExecuteCommandSync()
 	{
 		string cmd = "";
 		string options = "";
 
-		if((BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
+		if ((BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64)
 #if !UE_5_0_OR_LATER
 				|| (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
 		  )
 		{
-			cmd="cmd.exe";
-			options="/c ";
+			cmd = "cmd.exe";
+			options = "/c ";
 		}
-		else if(IsUnixPlatform(BuildHostPlatform.Current.Platform)) 
+		else if (IsUnixPlatform(BuildHostPlatform.Current.Platform))
 		{
-			cmd="bash";
-			options="-c ";
+			cmd = "bash";
+			options = "-c ";
 		}
 		return Tuple.Create(cmd, options);
 	}
 
 	public static int ExecuteCommandSync(string Command, string MModulePath)
 	{
-		var cmdInfo=GetExecuteCommandSync();
+		var cmdInfo = GetExecuteCommandSync();
 
-		if(IsUnixPlatform(BuildHostPlatform.Current.Platform)) 
+		if (IsUnixPlatform(BuildHostPlatform.Current.Platform))
 		{
-			Command=" \""+Command.Replace("\"", "\\\"")+" \"";
+			Command = " \"" + Command.Replace("\"", "\\\"") + " \"";
 		}
 
-		Console.WriteLine("Calling: "+cmdInfo.Item1+" "+cmdInfo.Item2+Command);
+		Console.WriteLine("Calling: " + cmdInfo.Item1 + " " + cmdInfo.Item2 + Command);
 
-		var processInfo = new ProcessStartInfo(cmdInfo.Item1, cmdInfo.Item2+Command)
+		var processInfo = new ProcessStartInfo(cmdInfo.Item1, cmdInfo.Item2 + Command)
 		{
-			CreateNoWindow=true,
-				UseShellExecute=false,
-				RedirectStandardError=true,
-				RedirectStandardOutput=true,
-				WorkingDirectory=MModulePath
+			CreateNoWindow = true,
+			UseShellExecute = false,
+			RedirectStandardError = true,
+			RedirectStandardOutput = true,
+			WorkingDirectory = MModulePath
 		};
 
 		StringBuilder outputString = new StringBuilder();
 		Process p = Process.Start(processInfo);
 
-		p.OutputDataReceived+=(sender, args) => {outputString.Append(args.Data); Console.WriteLine(args.Data);};
-		p.ErrorDataReceived+=(sender, args) => {outputString.Append(args.Data); Console.WriteLine(args.Data);};
+		p.OutputDataReceived += (sender, args) => { outputString.Append(args.Data); Console.WriteLine(args.Data); };
+		p.ErrorDataReceived += (sender, args) => { outputString.Append(args.Data); Console.WriteLine(args.Data); };
 		p.BeginOutputReadLine();
 		p.BeginErrorReadLine();
 		p.WaitForExit();
 
-		if(p.ExitCode != 0)
+		if (p.ExitCode != 0)
 		{
 			Console.WriteLine(outputString);
 		}
 		return p.ExitCode;
 	}
 
-	private static bool IsUnixPlatform(UnrealTargetPlatform Platform) {
+	private static bool IsUnixPlatform(UnrealTargetPlatform Platform)
+	{
 		return Platform == UnrealTargetPlatform.Linux || Platform == UnrealTargetPlatform.Mac;
 	}
 
@@ -215,18 +229,19 @@ public class BuildUtils {
 	{
 		string program = "cmake";
 
-		if((BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
+		if ((BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64)
 #if !UE_5_0_OR_LATER
 				|| (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
 		  )
 		{
-			program+=".exe";
+			program += ".exe";
 		}
 		return program;
 	}
 
-	public static string GetBulletBuildDir(string ModuleDirectory, UnrealBuildTool.UnrealTargetPlatform Platform) {
+	public static string GetBulletBuildDir(string ModuleDirectory, UnrealBuildTool.UnrealTargetPlatform Platform)
+	{
 
 		if (Platform == UnrealTargetPlatform.Win64)
 		{
@@ -243,14 +258,14 @@ public class BuildUtils {
 		return "invalid platform";
 	}
 
-	public static string GetBuildType(string BuildType) 
+	public static string GetBuildType(string BuildType)
 	{
 		switch (BuildType)
 		{
 			case "Debug":
 				return "Debug";
 			case "Development":
-				return "RelWithDebugInfo";
+				return "RelWithDebInfo";
 		}
 		return "Release";
 	}

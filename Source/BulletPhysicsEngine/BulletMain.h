@@ -8,6 +8,7 @@ THIRD_PARTY_INCLUDES_START
 // This is needed to fix memory alignment issues
 PRAGMA_PUSH_PLATFORM_DEFAULT_PACKING
 
+#define BT_USE_DOUBLE_PRECISION
 // Value types
 #include "LinearMath/btQuaternion.h"
 #include "LinearMath/btTransform.h"
