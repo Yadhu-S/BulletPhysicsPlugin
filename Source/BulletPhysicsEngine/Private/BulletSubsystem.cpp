@@ -3,13 +3,15 @@
 
 #include "BulletSubsystem.h"
 
+#include "EngineUtils.h"
+
 
 const FVector UE_WORLD_ORIGIN = FVector(0);
 
 
 void UBulletSubsystem::Initialize(FSubsystemCollectionBase& Collection){
 
-
+	Super::Initialize(Collection);
 	PhysicsDeltaTime = 1/PhysicsRefreshRate;
 
 	BtCollisionConfig = new btDefaultCollisionConfiguration();
@@ -37,6 +39,46 @@ void UBulletSubsystem::Initialize(FSubsystemCollectionBase& Collection){
 void UBulletSubsystem::Deinitialize() {
 	
 }
+
+void UBulletSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	FName bulletStaticTag = FName("B_STATIC");
+	FName bulletDynamicTag = FName("B_DYNAMIC");
+
+
+
+	Super::OnWorldBeginPlay(InWorld);
+	for (TActorIterator<AActor> actorItr(&InWorld); actorItr; ++actorItr)
+	{
+		AActor* actor = *actorItr;
+		if (!actor)
+			continue;
+
+		int dummyID = 0; // Doesn't really matter
+		// Check if the actor has a UStaticMeshComponent directly
+		if (actor->ActorHasTag(bulletStaticTag))
+		{
+			AddStaticBody(actor,0.5,0.9,dummyID);
+		}else if (actor->ActorHasTag(bulletDynamicTag))
+		{
+			AddRigidBody(actor,0.5,0.9,dummyID, 10.f);
+		}
+	}
+	
+}
+
+void UBulletSubsystem::Tick(float deltaTime)
+{
+	Super::Tick(deltaTime);
+	StepPhysics(deltaTime);
+}
+
+TStatId UBulletSubsystem::GetStatId() const
+{
+	RETURN_QUICK_DECLARE_CYCLE_STAT(UBulletSubsystem, STATGROUP_Tickables);
+}
+
+
 
 
 void UBulletSubsystem::EnableDebugDrawer(){
@@ -460,10 +502,11 @@ btRigidBody* UBulletSubsystem::AddRigidBody(AActor* Actor, btCollisionShape* Col
 	return body;
 }
 
-btRigidBody* UBulletSubsystem::AddRigidBody(USkeletalMeshComponent* skel,FTransform PhysicsAssetTransform, btCollisionShape* collisionShape, float mass, float friction, float restitution)
+btRigidBody* UBulletSubsystem::AddRigidBody(USkeletalMeshComponent* skel, const FTransform& PhysicsAssetTransform, btCollisionShape* collisionShape, float mass, float friction, float restitution)
 {
-	FVector origin = skel->GetOwner()->GetActorLocation();
+	checkf(skel!=nullptr, TEXT("Got null skeletal mesh"));
 	btVector3 inertia(0,0,0);
+	checkf(collisionShape!=nullptr, TEXT("Please configure physics asset for: %s"), *skel->GetName());
 	collisionShape->calculateLocalInertia(mass, inertia);
 	BulletUEMotionState* objMotionState = new BulletUEMotionState(skel, UE_WORLD_ORIGIN, PhysicsAssetTransform);
 	const btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, objMotionState, collisionShape, inertia);

@@ -7,22 +7,37 @@ Bullet Physics SDK for Unreal Engine
 
 
 
-## Status Experimental, but somewhat useable.
-#### Please make your own fork if you decide to use this.
+## Status Experimental, but usable.
 
-Implementing and adding support for a custom USkeletalMeshComponent. It supports compound shapes.
+### Features:
+* A custom USkeletalMeshComponent.
+* Supports compound shapes.
 
-*This is a work in progress (very WIP) :), use the originally forked repo mentioned below if you want something usable.*
+#### Consider making your own fork if you decide to use this.
+~~*This is a work in progress (very WIP) :), use the originally forked repo mentioned below if you want something usable.*~~
 
 ## How to use
 
-### Windows
+### Adding objects to the sim
+There are multiple ways to add bodies to the jolt sub system. 
+Easiest way is to use and `ActorTag`. Tag dynamic Bodies with `B_DYNAMIC` and static bodies with `B_STATIC`
+
+### Ticking
+This will be handled automatically by UTickableWorldSubsystem.
+
+### Debug Rendering
+
+To enable debug renderer, call the EnableDebugDrawer as shown in the screenshot
+
+
+## Compiling
+#### Windows
 Clone this repo into a `Plugin` directory of your choice, `Engine` or `<Your project Dir>`.
 
 ### Linux
 Clone this repo into a `Plugin` directory of your choice, `Engine` or `<Your project Dir>`.
 
-### Mac
+#### Mac
 Might work, no idea
 
 #### Manual compilation (bullet 3) 
@@ -41,6 +56,7 @@ cmake \
 ```
 
 3. `make`, had to use `make -j` because, compile was not using all cores for some reason.
+
 
 
 ### Credits

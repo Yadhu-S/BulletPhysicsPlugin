@@ -21,14 +21,14 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FRayTestSingleCallback, const FVector&, To,
 
 
 UCLASS()
-	class BULLETPHYSICSENGINE_API UBulletSubsystem : public UWorldSubsystem
+	class BULLETPHYSICSENGINE_API UBulletSubsystem : public UTickableWorldSubsystem
 {
 	GENERATED_BODY()
 
 	public:	
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
-			void AddStaticBody(AActor* player, float Friction, float Restitution,int &ID);
+			void AddStaticBody(AActor* Body, float Friction, float Restitution,int &ID);
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Objects")
 			void AddProcBody(AActor* Body,  float Friction, TArray<FVector> a, TArray<FVector> b, TArray<FVector> c, TArray<FVector> d, float Restitution, int& ID);
@@ -76,7 +76,7 @@ UCLASS()
 
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
 			int SubSteps=1;
-
+	
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
 			float RandVar;
 
@@ -97,7 +97,13 @@ UCLASS()
 
 		virtual void Deinitialize() override;
 
-	private:
+		virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+	
+		virtual void Tick(float deltaTime) override;
+
+		virtual TStatId GetStatId() const override;
+
+private:
 		// Bullet section
 		// Global objects
 
@@ -144,7 +150,7 @@ UCLASS()
 
 		float Accumulator = 0.0f;
 	public:
-		btDiscreteDynamicsWorld* GetBulletWorld(){return BtWorld;};
+		btDiscreteDynamicsWorld* GetBulletWorld() const {return BtWorld;};
 
 		void RayTestSingle(FVector Start, FVector End, int CheckObjectID, void (*HitCallback)(const FVector&, const FVector&));
 
@@ -162,7 +168,7 @@ UCLASS()
 
 		btRigidBody* AddRigidBody(AActor* Actor, btCollisionShape* CollisionShape, btVector3 Inertia, float Mass, float Friction, float Restitution);
 
-		btRigidBody* AddRigidBody(USkeletalMeshComponent* skel,FTransform localTransform, btCollisionShape* collisionShape, float Mass, float Friction, float Restitution);
+		btRigidBody* AddRigidBody(USkeletalMeshComponent* skel, const FTransform& localTransform, btCollisionShape* collisionShape, float Mass, float Friction, float Restitution);
 
 		btCollisionObject* GetStaticObject(int ID);
 

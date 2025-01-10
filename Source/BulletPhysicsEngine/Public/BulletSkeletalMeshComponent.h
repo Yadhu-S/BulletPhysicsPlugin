@@ -10,7 +10,7 @@
 #include "BulletSkeletalMeshComponent.generated.h"
 
 
-UCLASS()
+UCLASS(Blueprintable, meta=(BlueprintSpawnableComponent))
 	class BULLETPHYSICSENGINE_API UBulletSkeletalMeshComponent: public USkeletalMeshComponent
 {
 	GENERATED_BODY()
@@ -20,7 +20,7 @@ UCLASS()
 		UBulletSkeletalMeshComponent();
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
-			void LoadBulletActor(UBulletSubsystem* bulletSubsystem){BulletSubSystem = bulletSubsystem; AddOwnPhysicsAsset();};
+			void LoadBulletSubsystem(UBulletSubsystem* bulletSubsystem){BulletSubSystem = bulletSubsystem; AddOwnPhysicsAsset();};
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			void BulletAddForceAtLocation(FVector Force, FVector Location);
@@ -48,6 +48,9 @@ UCLASS()
 
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Skeletal Mesh")
 			float Restitution=0.5f;
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet Physics|Objects")
+			int bManualInitialization=false;
 
 		UFUNCTION(BlueprintCallable, Category = "Bullet Physics|Skeletal Mesh")
 			void BulletSetCenterOfMass(FTransform CentreOfMass);
@@ -79,9 +82,6 @@ UCLASS()
 	protected:
 
 		virtual void BeginPlay() override;
-
-	private:
-
 
 
 };

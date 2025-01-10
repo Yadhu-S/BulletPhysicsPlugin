@@ -26,6 +26,21 @@ void UBulletSkeletalMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Log, TEXT("UBulletSkeletalMeshComponent::BeginPlay"));
+
+	if (bManualInitialization)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Using manual initialization"));
+		return;
+	}
+
+	UBulletSubsystem* BulletSubsystem = GetWorld()->GetSubsystem<UBulletSubsystem>();
+	if (BulletSubsystem == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BulletSubSystem null, manual init required)"));
+		return;
+	}
+	LoadBulletSubsystem(BulletSubsystem);
+
 }
 
 
