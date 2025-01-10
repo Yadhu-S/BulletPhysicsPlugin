@@ -30,7 +30,7 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 		// TODO: Too lazy to add it as a definition here.
 		cmakeOptions += " -DINSTALL_LIBS=0 "; 
 		cmakeOptions += " -DINSTALL_EXTRA_LIBS=0 "; 
-		cmakeOptions += " -DLIBRARY_OUTPUT_PATH="+LibOutputPath; 
+		cmakeOptions += " -DLIBRARY_OUTPUT_PATH=\""+LibOutputPath + "\""; 
 		cmakeOptions += " -DCMAKE_BUILD_TYPE="+BuildUtils.GetBuildType(BuildType);
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
@@ -58,8 +58,8 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 
 		var generateCommand = "";
 		generateCommand += BuildUtils.GetCMakeExe() + " ";
-		generateCommand += " -S" + ThirdPartyBulletPath + " ";
-		generateCommand += "-B" + BulletBuildDir + " ";
+		generateCommand += " -S\"" + ThirdPartyBulletPath + "\" ";
+		generateCommand += "-B\"" + BulletBuildDir + "\" ";
 		generateCommand += cmakeOptions;
 		var configureCode = BuildUtils.ExecuteCommandSync(generateCommand,Path.GetFullPath(ModulePath));
 		if (configureCode != 0)
@@ -70,7 +70,7 @@ public class BulletPhysicsEngineLibrary : ModuleRules
 
 		var buildCommand = "";
 		buildCommand += BuildUtils.GetCMakeExe() + " ";
-		buildCommand += " --build " + BulletBuildDir + " ";
+		buildCommand += " --build \"" + BulletBuildDir + "\" ";
 		buildCommand += " --target ";
 		string[] libraryNames = { "BulletCollision", "BulletDynamics", "LinearMath" };
 		foreach (string libraryName in libraryNames)
